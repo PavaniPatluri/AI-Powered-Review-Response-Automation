@@ -197,9 +197,11 @@ const App = () => {
               }}>
                 <WifiOff size={16} style={{ color: '#f87171', flexShrink: 0 }} />
                 <span style={{ color: 'var(--text-sub)', flex: 1 }}>
-                  <strong style={{ color: '#f87171' }}>Backend Offline:</strong> Start the FastAPI server at{' '}
-                  <code style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem' }}>http://localhost:8000</code>.
-                  Reviews shown are cached.
+                  <strong style={{ color: '#f87171' }}>Intelligence Engine Offline:</strong> {
+                    import.meta.env.PROD 
+                    ? "Check your cloud environment variables and deployment status." 
+                    : "Start the FastAPI server at localhost:8000."
+                  }
                 </span>
                 <button className="btn btn-danger" style={{ fontSize: '0.75rem', padding: '0.4rem 0.875rem' }}
                   onClick={() => window.location.reload()}>
