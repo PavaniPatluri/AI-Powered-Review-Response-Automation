@@ -142,8 +142,15 @@ async def review_simulation_task():
 
 @app.on_event("startup")
 async def startup_event():
-    await ai_service.initialize_ai()
-    asyncio.create_task(review_simulation_task())
+    try:
+        print("Initializing Intelligence Core...")
+        await ai_service.initialize_ai()
+        asyncio.create_task(review_simulation_task())
+        print("Backend services successfully started.")
+    except Exception as e:
+        print(f"CRITICAL STARTUP ERROR: {e}")
+        # We don't re-raise here to allow the FastAPI app to at least serve the root/health endpoints
+        # This helps in debugging 500 errors on Vercel
 
 # ─── Export ───────────────────────────────────────────────────────────────────
 
