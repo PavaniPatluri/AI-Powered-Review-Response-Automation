@@ -8,6 +8,7 @@ import json
 import io
 import schemas
 from services import ai_service
+from services.database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
@@ -30,8 +31,8 @@ async def root():
 @app.get("/reviews", response_model=List[schemas.Review])
 async def get_reviews():
     try:
-        data = ai_service.load_data()
-        return data["reviews"]
+        reviews = await db.get_all("reviews")
+        return reviews or []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -39,7 +40,7 @@ async def get_reviews():
 async def analyze_review(review: schemas.ReviewInput):
     try:
         sentiment = ai_service.analyze_sentiment(review.content)
-        suggested_responses = ai_service.generate_responses(
+        suggested_responses = await ai_service.generate_responses(
             review.content, sentiment, review.tone, review.business_type or "Restaurant"
         )
         return {"sentiment": sentiment, "suggested_responses": suggested_responses}
@@ -51,17 +52,16 @@ async def analyze_review(review: schemas.ReviewInput):
 @app.get("/prompts", response_model=List[schemas.PromptTemplate])
 async def get_prompts():
     try:
-        data = ai_service.load_data()
-        return data["prompts"]
+        prompts = await db.get_all("prompts")
+        return prompts or []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/prompts")
 async def update_prompts(prompts: List[schemas.PromptTemplate]):
     try:
-        data = ai_service.load_data()
-        data["prompts"] = [p.dict() for p in prompts]
-        ai_service.save_data(data)
+        data = [p.dict() for p in prompts]
+        await db.upsert("prompts", data)
         return {"message": "Prompts updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,8 +71,8 @@ async def update_prompts(prompts: List[schemas.PromptTemplate]):
 @app.get("/trends")
 async def get_trends():
     try:
-        data = ai_service.load_data()
-        return ai_service.generate_trends(data["reviews"])
+        reviews = await db.get_all("reviews")
+        return ai_service.generate_trends(reviews or [])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -81,8 +81,8 @@ async def get_trends():
 @app.post("/search")
 async def search_reviews(request: schemas.SearchRequest):
     try:
-        data = ai_service.load_data()
-        results = ai_service.ai_search(request.query, data["reviews"], request.filters or {})
+        reviews = await db.get_all("reviews")
+        results = ai_service.ai_search(request.query, reviews or [], request.filters or {})
         return {"results": results, "total": len(results), "query": request.query}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -93,7 +93,7 @@ async def search_reviews(request: schemas.SearchRequest):
 async def get_realtime_review():
     """Returns a simulated new review arriving in real-time"""
     try:
-        return ai_service.get_simulated_realtime_review()
+        return await ai_service.get_simulated_realtime_review()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -135,13 +135,14 @@ async def review_simulation_task():
     while True:
         await asyncio.sleep(random.randint(45, 60))
         try:
-            new_review = ai_service.get_simulated_realtime_review()
+            new_review = await ai_service.get_simulated_realtime_review()
             await manager.broadcast(json.dumps(new_review))
         except Exception as e:
             print(f"Simulation error: {e}")
 
 @app.on_event("startup")
 async def startup_event():
+    await ai_service.initialize_ai()
     asyncio.create_task(review_simulation_task())
 
 # ─── Export ───────────────────────────────────────────────────────────────────
@@ -149,8 +150,8 @@ async def startup_event():
 @app.get("/export")
 async def export_reviews():
     try:
-        data = ai_service.load_data()
-        csv_content = ai_service.generate_csv_report(data["reviews"])
+        reviews = await db.get_all("reviews")
+        csv_content = ai_service.generate_csv_report(reviews or [])
         return StreamingResponse(
             io.StringIO(csv_content),
             media_type="text/csv",
@@ -164,20 +165,16 @@ async def export_reviews():
 @app.get("/profiles", response_model=List[schemas.BusinessProfile])
 async def get_profiles():
     try:
-        data = ai_service.load_data()
-        return data.get("business_profiles", [data.get("business_profile")]) if data.get("business_profiles") or data.get("business_profile") else []
+        profiles = await db.get_all("profiles")
+        return profiles or []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/profiles")
 async def update_profiles(profiles: List[schemas.BusinessProfile]):
     try:
-        data = ai_service.load_data()
-        data["business_profiles"] = [p.dict() for p in profiles]
-        # Keep business_profile for backward compatibility
-        if profiles:
-            data["business_profile"] = profiles[0].dict()
-        ai_service.save_data(data)
+        data = [p.dict() for p in profiles]
+        await db.upsert("profiles", data)
         return {"message": "Profiles updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -185,22 +182,19 @@ async def update_profiles(profiles: List[schemas.BusinessProfile]):
 @app.get("/profile", response_model=schemas.BusinessProfile)
 async def get_profile():
     try:
-        data = ai_service.load_data()
-        profiles = data.get("business_profiles", [])
+        profiles = await db.get_all("profiles")
         if profiles:
             return profiles[0]
-        return data.get("business_profile", {
+        return {
             "id": "default", "name": "My Business", "type": "Restaurant", "address": "", "contact": "", "specialties": []
-        })
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/profile")
 async def update_profile(profile: schemas.BusinessProfile):
     try:
-        data = ai_service.load_data()
-        data["business_profile"] = profile.dict()
-        ai_service.save_data(data)
+        await db.upsert("profiles", [profile.dict()])
         return {"message": "Profile updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -210,17 +204,16 @@ async def update_profile(profile: schemas.BusinessProfile):
 @app.get("/rules", response_model=List[schemas.AutomationRule])
 async def get_rules():
     try:
-        data = ai_service.load_data()
-        return data.get("automation_rules", [])
+        rules = await db.get_all("rules")
+        return rules or []
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/rules")
 async def update_rules(rules: List[schemas.AutomationRule]):
     try:
-        data = ai_service.load_data()
-        data["automation_rules"] = [r.dict() for r in rules]
-        ai_service.save_data(data)
+        data = [r.dict() for r in rules]
+        await db.upsert("rules", data)
         return {"message": "Automation rules updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -230,19 +223,17 @@ async def update_rules(rules: List[schemas.AutomationRule]):
 @app.get("/config/system", response_model=schemas.SystemConfig)
 async def get_system_config():
     try:
-        data = ai_service.load_data()
-        return data.get("system_config", {"gemini_api_key": ""})
+        config = await ai_service.get_config()
+        return config or {"gemini_api_key": ""}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/config/system")
 async def update_system_config(config: schemas.SystemConfig):
     try:
-        data = ai_service.load_data()
-        data["system_config"] = config.dict()
-        ai_service.save_data(data)
+        await db.upsert("config", [{"id": "main", "gemini_api_key": config.gemini_api_key}])
         # Re-initialize the AI service with the new key immediately
-        ai_service.initialize_ai()
+        await ai_service.initialize_ai()
         return {"message": "System configuration updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

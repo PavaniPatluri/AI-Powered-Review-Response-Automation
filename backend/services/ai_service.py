@@ -1,35 +1,20 @@
-import json
-import os
-import random
-import string
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-from dotenv import load_dotenv
+from .database import db
 
 # Load environment variables
 load_dotenv()
 
-STORAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "storage.json")
 model = None
 
 # ─── Data helpers ────────────────────────────────────────────────────────────
 
-def load_data():
-    try:
-        with open(STORAGE_PATH, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {"prompts": [], "reviews": []}
+async def get_config():
+    res = await db.get_by_id("config", "main")
+    return res or {"gemini_api_key": ""}
 
-def save_data(data):
-    with open(STORAGE_PATH, 'w') as f:
-        json.dump(data, f, indent=2)
-
-def initialize_ai():
+async def initialize_ai():
     global model
-    data = load_data()
-    system_config = data.get("system_config", {})
-    api_key = system_config.get("gemini_api_key") or os.getenv("GEMINI_API_KEY")
+    config = await get_config()
+    api_key = config.get("gemini_api_key") or os.getenv("GEMINI_API_KEY")
     
     if api_key:
         try:
@@ -44,16 +29,13 @@ def initialize_ai():
                         text = resp.text
                     return _R()
             model = _ModelWrapper()
-            print("Gemini AI successfully initialized.")
+            print("Gemini AI successfully initialized from Database.")
         except Exception as _e:
             print(f"Warning: Could not initialize Gemini: {_e}")
             model = None
     else:
         model = None
         print("Running in AI Simulation Mode. Add Gemini API key in settings.")
-
-# Initialize at startup
-initialize_ai()
 
 # ─── Comprehensive Review Analysis ───────────────────────────────────────────
 
@@ -108,15 +90,16 @@ def analyze_sentiment(content: str) -> str:
 
 # ─── Response Generation ──────────────────────────────────────────────────────
 
-def generate_responses(content: str, sentiment: str, preferred_tone: str = "Professional",
-                       business_type: str = "Restaurant") -> List[Dict]:
-    data = load_data()
-    profile = data.get("business_profile", {})
+async def generate_responses(content: str, sentiment: str, preferred_tone: str = "Professional",
+                       business_type: str = "Restaurant", profile_id: str = "default") -> List[Dict]:
+    profiles = await db.get_all("profiles")
+    profile = next((p for p in profiles if p["id"] == profile_id), {}) if profiles else {}
     
+    prompts = await db.get_all("prompts")
     # Find matching prompt template
-    prompt_template = next((p for p in data["prompts"] if p["tone"] == preferred_tone), None)
+    prompt_template = next((p for p in prompts if p["tone"] == preferred_tone), None) if prompts else None
     if not prompt_template:
-        prompt_template = next((p for p in data["prompts"] if p["tone"] == "Professional"), {"system_prompt": "You are a helpful business owner.", "examples": []})
+        prompt_template = next((p for p in prompts if p["tone"] == "Professional"), {"system_prompt": "You are a helpful business owner.", "examples": []}) if prompts else {"system_prompt": "You are a helpful business owner.", "examples": []}
     
     system_prompt = prompt_template["system_prompt"]
     examples = prompt_template.get("examples", [])
@@ -283,7 +266,7 @@ def ai_search(query: str, reviews: List[Dict], filters: Dict = {}) -> List[Dict]
 
 # ─── Automation Engine ────────────────────────────────────────────────────────
 
-def apply_automation_rules(review: Dict, rules: List[Dict]) -> Dict:
+async def apply_automation_rules(review: Dict, rules: List[Dict]) -> Dict:
     """Matches rules against a review and generates a draft response if rule matches"""
     # Sort rules by rating_min descending to catch the highest matching rule first
     sorted_rules = sorted([r for r in rules if r.get("enabled", True)], 
@@ -328,7 +311,7 @@ def apply_automation_rules(review: Dict, rules: List[Dict]) -> Dict:
         sentiment = review.get("sentiment", "Neutral")
         b_type = review.get("business_type", "Restaurant")
         
-        responses = generate_responses(review["content"], sentiment, tone, b_type)
+        responses = await generate_responses(review["content"], sentiment, tone, b_type, review.get("profile_id", "default"))
         if responses:
             review["drafted_response"] = responses[0]["content"]
             review["ai_tone"] = tone
@@ -352,14 +335,13 @@ REALTIME_REVIEW_POOL = [
     {"author": "Marie Dubois", "rating": 2, "content": "Le service était très lent et la nourriture était froide. Très déçu.", "business_type": "Restaurant", "platform": "Google"},
 ]
 
-def get_simulated_realtime_review() -> Dict:
+async def get_simulated_realtime_review() -> Dict:
     """Returns a random review with current timestamp for real-time simulation"""
-    data = load_data()
-    rules = data.get("automation_rules", [])
-    profiles = data.get("business_profiles", [])
+    rules = await db.get_all("rules")
+    profiles = await db.get_all("profiles")
     
     # Select a random profile if multiple exist, otherwise use default
-    profile = random.choice(profiles) if profiles else data.get("business_profile", {"id": "default", "name": "Default Business", "type": "Restaurant"})
+    profile = random.choice(profiles) if profiles else {"id": "default", "name": "Default Business", "type": "Restaurant"}
     
     base = random.choice(REALTIME_REVIEW_POOL)
     review_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -386,11 +368,10 @@ def get_simulated_realtime_review() -> Dict:
     }
     
     # Apply automation rules
-    review = apply_automation_rules(review, rules)
+    review = await apply_automation_rules(review, rules or [])
     
     # Persist to storage
-    data.setdefault("reviews", []).insert(0, review)
-    save_data(data)
+    await db.upsert("reviews", [review])
     
     return review
 
