@@ -1,7 +1,7 @@
 import json
 import asyncio
 import os
-from database import db
+from .database import db
 
 # Load local data
 STORAGE_PATH = os.path.join(os.path.dirname(__file__), "storage.json")
@@ -21,7 +21,7 @@ async def migrate():
         return
 
     # Check for credentials
-    from database import settings
+    from .database import settings
     if not settings.supabase_url or not settings.supabase_key:
         print("Error: SUPABASE_URL and SUPABASE_KEY must be set in your .env file.")
         print(f"Debug: URL={settings.supabase_url}, KEY={'Set' if settings.supabase_key else 'Empty'}")
