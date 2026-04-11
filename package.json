@@ -1,0 +1,9 @@
+{
+  "name": "review-catalyst-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build": "npm run build:frontend"
+  }
+}
