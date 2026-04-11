@@ -19,6 +19,7 @@ const SentimentIcon = ({ s }) => {
 
 const RealtimeView = ({ reviews = [] }) => {
   const [pulseCount, setPulseCount] = useState(0);
+  const isPolling = true; // Added to fix ReferenceError
 
   useEffect(() => {
     setPulseCount(reviews.length);
