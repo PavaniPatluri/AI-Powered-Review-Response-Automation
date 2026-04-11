@@ -6,9 +6,11 @@ import asyncio
 import random
 import json
 import io
-from . import schemas
-from .services import ai_service
-from .database import db
+import sys
+import os
+from backend import schemas
+from backend.services import ai_service
+from backend.database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
@@ -25,6 +27,17 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "AI Review Response Automation API v2.0 is running", "status": "healthy"}
+
+@app.get("/status")
+async def status():
+    from backend.database import settings
+    return {
+        "status": "online",
+        "supabase_url_set": bool(settings.supabase_url),
+        "supabase_key_set": bool(settings.supabase_key),
+        "gemini_api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+        "python_path": sys.path
+    }
 
 # ─── Reviews ─────────────────────────────────────────────────────────────────
 

@@ -5,8 +5,8 @@ import string
 from datetime import datetime
 from typing import List, Dict
 from dotenv import load_dotenv
-from ..database import db
-from .. import schemas
+from backend.database import db
+from backend import schemas
 
 # Load environment variables
 load_dotenv()
