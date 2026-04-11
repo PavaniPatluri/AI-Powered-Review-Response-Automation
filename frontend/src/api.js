@@ -1,4 +1,5 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/live-reviews';
 
 export const fetchReviews = async () => {
   const res = await fetch(`${BASE_URL}/reviews`);
@@ -109,4 +110,4 @@ export const updateSystemConfig = async (config) => {
 };
 
 export const EXPORT_REVIEWS_URL = `${BASE_URL}/export`;
-export const WS_URL = `ws://localhost:8000/ws/live-reviews`;
+export { WS_URL };
