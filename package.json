@@ -2,8 +2,10 @@
   "name": "review-catalyst-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "build:frontend": "cd frontend && npm install && npm run build",
-    "build": "npm run build:frontend"
+    "build": "npm run build --workspace=frontend"
   }
 }
