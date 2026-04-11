@@ -1,15 +1,13 @@
 {
-  "version": 2,
-  "public": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "frontend/dist/$1",
-      "check": true
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routePrefix": "/",
+      "framework": "vite"
     },
-    {
-      "source": "/(.*)",
-      "destination": "frontend/dist/index.html"
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/api"
     }
-  ]
+  }
 }
