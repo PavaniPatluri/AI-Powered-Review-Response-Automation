@@ -6,9 +6,9 @@ import asyncio
 import random
 import json
 import io
-import schemas
-from services import ai_service
-from services.database import db
+from . import schemas
+from .services import ai_service
+from .database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 

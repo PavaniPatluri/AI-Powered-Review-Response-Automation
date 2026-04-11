@@ -1,4 +1,5 @@
-from .database import db
+from ..database import db
+from .. import schemas
 
 # Load environment variables
 load_dotenv()
