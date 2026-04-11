@@ -41,6 +41,7 @@ FALLBACK_REVIEWS = [
         "date": "2026-04-12",
         "business_type": btype,
         "platform": "Google",
+        "source": "Simulation",
         "status": "Pending"
     }
     for i, (name, btype) in enumerate(zip(
