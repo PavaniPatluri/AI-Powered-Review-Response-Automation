@@ -9,20 +9,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from typing import List
 
-# Robust Import logic
+# Clear signal of production stability
 try:
+    from backend import schemas
+    from backend.services import ai_service
+    from backend.database import db
+except ImportError:
+    # Local development fallback
     import schemas
     from services import ai_service
     from database import db
-except ImportError:
-    try:
-        from backend import schemas
-        from backend.services import ai_service
-        from backend.database import db
-    except ImportError:
-        from . import schemas
-        from .services import ai_service
-        from .database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
@@ -34,22 +30,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Health & Diagnostics (TOP LEVEL) ──────────────────────────────────────────
+# ─── Health & Status ─────────────────────────────────────────────────────────
 
 @app.get("/")
 async def root():
     return {"message": "AI Review Response Automation API v2.0 is running", "status": "healthy"}
 
+@app.get("/api/status")
 @app.get("/status")
 async def status():
     try:
-        from database import settings
+        from backend.database import settings
     except ImportError:
-        try:
-            from backend.database import settings
-        except ImportError:
-            from .database import settings
-            
+        from database import settings
+        
     return {
         "status": "online",
         "supabase_url_set": bool(getattr(settings, 'supabase_url', '')),
@@ -61,223 +55,137 @@ async def status():
 # ─── Reviews ─────────────────────────────────────────────────────────────────
 
 @app.get("/reviews", response_model=List[schemas.Review])
+@app.get("/api/reviews", response_model=List[schemas.Review])
 async def get_reviews():
     try:
         reviews = await db.get_all("reviews")
         return reviews or []
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error fetching reviews: {e}")
+        return []
 
-@app.post("/analyze-review", response_model=schemas.ReviewAnalysis)
-async def analyze_review(review: schemas.ReviewInput):
-    try:
-        sentiment = ai_service.analyze_sentiment(review.content)
-        suggested_responses = await ai_service.generate_responses(
-            review.content, sentiment, review.tone, review.business_type or "Restaurant"
-        )
-        return {"sentiment": sentiment, "suggested_responses": suggested_responses}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/reviews/{review_id}/respond")
+@app.post("/api/reviews/{review_id}/respond")
+async def draft_response(review_id: str, input_data: schemas.ReviewInput):
+    # Fetch review
+    review = await db.get_by_id("reviews", review_id)
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+        
+    # Generate response
+    response = await ai_service.generate_response(review, input_data.tone)
+    
+    # Update review with draft
+    await db.update("reviews", review_id, {
+        "drafted_response": response,
+        "ai_tone": input_data.tone,
+        "status": "Drafted"
+    })
+    
+    return {"id": review_id, "response": response}
 
-# ─── Prompts ──────────────────────────────────────────────────────────────────
+@app.post("/reviews/{review_id}/publish")
+@app.post("/api/reviews/{review_id}/publish")
+async def publish_response(review_id: str):
+    await db.update("reviews", review_id, {"status": "Published"})
+    return {"status": "success"}
 
-@app.get("/prompts", response_model=List[schemas.PromptTemplate])
-async def get_prompts():
-    try:
-        prompts = await db.get_all("prompts")
-        return prompts or []
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/prompts")
-async def update_prompts(prompts: List[schemas.PromptTemplate]):
-    try:
-        data = [p.dict() for p in prompts]
-        await db.upsert("prompts", data)
-        return {"message": "Prompts updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ─── Trends ───────────────────────────────────────────────────────────────────
+# ─── Trends & Insights ───────────────────────────────────────────────────────
 
 @app.get("/trends")
+@app.get("/api/trends")
 async def get_trends():
     try:
-        reviews = await db.get_all("reviews")
-        return ai_service.generate_trends(reviews or [])
+        trends = await ai_service.generate_trends()
+        return trends
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error generating trends: {e}")
+        # Fallback trends
+        return {
+            "score": 0,
+            "summary": "AI Intelligence core is initializing or missing configuration.",
+            "strengths": ["System Standby"],
+            "weaknesses": ["Data Ingestion Pending"]
+        }
 
-# ─── AI Search ────────────────────────────────────────────────────────────────
+# ─── Knowledge & Search ──────────────────────────────────────────────────────
 
-@app.post("/search")
+@app.post("/search", response_model=List[schemas.SearchResult])
+@app.post("/api/search", response_model=List[schemas.SearchResult])
 async def search_reviews(request: schemas.SearchRequest):
-    try:
-        reviews = await db.get_all("reviews")
-        results = ai_service.ai_search(request.query, reviews or [], request.filters or {})
-        return {"results": results, "total": len(results), "query": request.query}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await ai_service.semantic_search(request.query)
 
-# ─── Real-Time Review Simulation ─────────────────────────────────────────────
+# ─── Config & Automation ─────────────────────────────────────────────────────
 
-@app.get("/realtime/review")
-async def get_realtime_review():
-    """Returns a simulated new review arriving in real-time"""
-    try:
-        return await ai_service.get_simulated_realtime_review()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/prompts")
+@app.get("/api/prompts")
+async def get_prompts():
+    return await db.get_all("prompts") or []
 
-# ─── WebSocket for Live Feed ──────────────────────────────────────────────────
+@app.get("/rules")
+@app.get("/api/rules")
+async def get_rules():
+    return await db.get_all("automation_rules") or []
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
+@app.get("/profile")
+@app.get("/api/profile")
+async def get_profile():
+    profiles = await db.get_all("business_profiles")
+    return profiles[0] if profiles else {}
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
+@app.get("/export")
+@app.get("/api/export")
+async def export_reviews():
+    reviews = await db.get_all("reviews")
+    csv_content = ai_service.generate_csv_report(reviews or [])
+    return StreamingResponse(
+        io.StringIO(csv_content),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=reviews_export.csv"}
+    )
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+# ─── Real-time Intelligence Hub ──────────────────────────────────────────────
 
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            try:
-                await connection.send_text(message)
-            except:
-                pass
-
-manager = ConnectionManager()
+active_connections = set()
 
 @app.websocket("/ws/live-reviews")
-async def websocket_live_reviews(websocket: WebSocket):
-    await manager.connect(websocket)
+@app.websocket("/api/ws/live-reviews")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.add(websocket)
     try:
         while True:
             await websocket.receive_text() # Keep connection alive
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-
-# ─── Background Simulation ────────────────────────────────────────────────────
+        active_connections.remove(websocket)
 
 async def review_simulation_task():
-    """Generates and broadcasts a new review every 45-60 seconds"""
+    """Simulates incoming reviews for demonstration purposes if enabled"""
     while True:
-        await asyncio.sleep(random.randint(45, 60))
         try:
-            new_review = await ai_service.get_simulated_realtime_review()
-            await manager.broadcast(json.dumps(new_review))
+            # Random delay
+            await asyncio.sleep(60) 
+            # In a real app, this would poll an external API
         except Exception as e:
             print(f"Simulation error: {e}")
+            await asyncio.sleep(10)
 
 @app.on_event("startup")
 async def startup_event():
     try:
         print("Initializing Intelligence Core...")
-        await ai_service.initialize_ai()
-        # On Vercel, we only start the simulation if explicitly requested, as it can cause crashes in some environments
-        if not os.getenv("VERCEL"):
-            asyncio.create_task(review_simulation_task())
-        print("Backend services successfully started.")
+        # Check if we have the needed keys before spinning up the AI
+        from backend.database import settings
+        if settings.supabase_url and settings.supabase_key:
+            await ai_service.initialize_ai()
+            # Only start simulation if not on Vercel to save resources
+            if not os.getenv("VERCEL"):
+                asyncio.create_task(review_simulation_task())
+            print("Backend services successfully started.")
+        else:
+            print("WARNING: Database credentials missing. Backend running in restricted mode.")
     except Exception as e:
-        print(f"CRITICAL STARTUP ERROR: {e}")
-        # We don't re-raise here to allow the FastAPI app to at least serve the root/health endpoints
-        # This helps in debugging 500 errors on Vercel
-
-# ─── Export ───────────────────────────────────────────────────────────────────
-
-@app.get("/export")
-async def export_reviews():
-    try:
-        reviews = await db.get_all("reviews")
-        csv_content = ai_service.generate_csv_report(reviews or [])
-        return StreamingResponse(
-            io.StringIO(csv_content),
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=review_report.csv"}
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ─── Business Profiles (Multi-Location) ───────────────────────────────────────
-
-@app.get("/profiles", response_model=List[schemas.BusinessProfile])
-async def get_profiles():
-    try:
-        profiles = await db.get_all("profiles")
-        return profiles or []
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/profiles")
-async def update_profiles(profiles: List[schemas.BusinessProfile]):
-    try:
-        data = [p.dict() for p in profiles]
-        await db.upsert("profiles", data)
-        return {"message": "Profiles updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/profile", response_model=schemas.BusinessProfile)
-async def get_profile():
-    try:
-        profiles = await db.get_all("profiles")
-        if profiles:
-            return profiles[0]
-        return {
-            "id": "default", "name": "My Business", "type": "Restaurant", "address": "", "contact": "", "specialties": []
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/profile")
-async def update_profile(profile: schemas.BusinessProfile):
-    try:
-        await db.upsert("profiles", [profile.dict()])
-        return {"message": "Profile updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ─── Automation Rules ──────────────────────────────────────────────────────────
-
-@app.get("/rules", response_model=List[schemas.AutomationRule])
-async def get_rules():
-    try:
-        rules = await db.get_all("rules")
-        return rules or []
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/rules")
-async def update_rules(rules: List[schemas.AutomationRule]):
-    try:
-        data = [r.dict() for r in rules]
-        await db.upsert("rules", data)
-        return {"message": "Automation rules updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ─── System Configuration ──────────────────────────────────────────────────────
-
-@app.get("/config/system", response_model=schemas.SystemConfig)
-async def get_system_config():
-    try:
-        config = await ai_service.get_config()
-        return config or {"gemini_api_key": ""}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/config/system")
-async def update_system_config(config: schemas.SystemConfig):
-    try:
-        await db.upsert("config", [{"id": "main", "gemini_api_key": config.gemini_api_key}])
-        # Re-initialize the AI service with the new key immediately
-        await ai_service.initialize_ai()
-        return {"message": "System configuration updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"STARTUP ERROR: {e}")
 
 if __name__ == "__main__":
     import uvicorn

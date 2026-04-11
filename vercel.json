@@ -6,7 +6,7 @@
       "framework": "vite"
     },
     "backend": {
-      "entrypoint": "backend/debug_status.py",
+      "entrypoint": "backend/main.py",
       "routePrefix": "/api"
     }
   }
