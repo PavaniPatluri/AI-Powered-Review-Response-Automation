@@ -43,13 +43,19 @@ async def status():
         from backend.database import settings
     except ImportError:
         from database import settings
-        
+    
+    # Environment X-Ray: Find all keys that might be the URL or Key
+    env_keys = os.environ.keys()
+    supabase_related_keys = [k for k in env_keys if "SUPABASE" in k.upper()]
+    
     return {
         "status": "online",
         "supabase_url_set": bool(getattr(settings, 'supabase_url', '')),
         "supabase_key_set": bool(getattr(settings, 'supabase_key', '')),
         "gemini_api_key_set": bool(os.getenv("GEMINI_API_KEY")),
-        "python_path": sys.path
+        "python_path": sys.path,
+        "x_ray_detected_keys": supabase_related_keys,
+        "mode": "FALLBACK/DEMO" if not getattr(settings, 'supabase_url', '') else "CLOUD/LIVE"
     }
 
 # ─── Reviews ─────────────────────────────────────────────────────────────────
