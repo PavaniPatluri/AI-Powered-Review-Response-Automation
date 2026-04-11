@@ -5,7 +5,7 @@
 
 Built with a cinematic "Neural Nexus" aesthetic, it transforms raw reviews into actionable strategic intelligence through real-time synchronization and deep sentiment analysis.
 
-![Dash Mockup](https://via.placeholder.com/800x450?text=Review+Catalyst+Neural+Nexus+Dashboard)
+![Dash Mockup](assets/dashboard_mockup.png)
 
 ---
 
