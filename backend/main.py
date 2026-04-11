@@ -1,37 +1,28 @@
 import sys
 import os
-
-# Robust Path Resolution for Vercel
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
-try:
-    from backend import schemas
-    from backend.services import ai_service
-    from backend.database import db
-except ImportError:
-    try:
-        import schemas
-        from services import ai_service
-        from database import db
-    except ImportError:
-        # Fallback for some localized Vercel builds
-        from . import schemas
-        from .services import ai_service
-        from .database import db
-
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from typing import List
 import asyncio
 import random
 import json
 import io
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from typing import List
+
+# Robust Import logic
+try:
+    import schemas
+    from services import ai_service
+    from database import db
+except ImportError:
+    try:
+        from backend import schemas
+        from backend.services import ai_service
+        from backend.database import db
+    except ImportError:
+        from . import schemas
+        from .services import ai_service
+        from .database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
@@ -43,7 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Health ───────────────────────────────────────────────────────────────────
+# ─── Health & Diagnostics (TOP LEVEL) ──────────────────────────────────────────
 
 @app.get("/")
 async def root():
@@ -51,11 +42,18 @@ async def root():
 
 @app.get("/status")
 async def status():
-    from backend.database import settings
+    try:
+        from database import settings
+    except ImportError:
+        try:
+            from backend.database import settings
+        except ImportError:
+            from .database import settings
+            
     return {
         "status": "online",
-        "supabase_url_set": bool(settings.supabase_url),
-        "supabase_key_set": bool(settings.supabase_key),
+        "supabase_url_set": bool(getattr(settings, 'supabase_url', '')),
+        "supabase_key_set": bool(getattr(settings, 'supabase_key', '')),
         "gemini_api_key_set": bool(os.getenv("GEMINI_API_KEY")),
         "python_path": sys.path
     }
@@ -179,7 +177,9 @@ async def startup_event():
     try:
         print("Initializing Intelligence Core...")
         await ai_service.initialize_ai()
-        asyncio.create_task(review_simulation_task())
+        # On Vercel, we only start the simulation if explicitly requested, as it can cause crashes in some environments
+        if not os.getenv("VERCEL"):
+            asyncio.create_task(review_simulation_task())
         print("Backend services successfully started.")
     except Exception as e:
         print(f"CRITICAL STARTUP ERROR: {e}")
