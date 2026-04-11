@@ -1,12 +1,28 @@
 import os
+import sys
 import json
 import random
 import string
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 from dotenv import load_dotenv
-from backend.database import db
-from backend import schemas
+
+# Robust Path Resolution
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(os.path.dirname(current_dir))
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+try:
+    from backend.database import db
+    from backend import schemas
+except ImportError:
+    try:
+        from database import db
+        import schemas
+    except ImportError:
+        from ..database import db
+        from .. import schemas
 
 # Load environment variables
 load_dotenv()

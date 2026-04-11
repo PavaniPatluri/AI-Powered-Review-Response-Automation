@@ -1,3 +1,29 @@
+import sys
+import os
+
+# Robust Path Resolution for Vercel
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
+try:
+    from backend import schemas
+    from backend.services import ai_service
+    from backend.database import db
+except ImportError:
+    try:
+        import schemas
+        from services import ai_service
+        from database import db
+    except ImportError:
+        # Fallback for some localized Vercel builds
+        from . import schemas
+        from .services import ai_service
+        from .database import db
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -6,11 +32,6 @@ import asyncio
 import random
 import json
 import io
-import sys
-import os
-from backend import schemas
-from backend.services import ai_service
-from backend.database import db
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
