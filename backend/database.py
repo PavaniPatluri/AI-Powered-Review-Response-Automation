@@ -2,14 +2,13 @@ import os
 import json
 import httpx
 from typing import List, Dict, Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    supabase_url: str = os.getenv("SUPABASE_URL", "")
-    supabase_key: str = os.getenv("SUPABASE_KEY", "")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
-    class Config:
-        env_file = ".env"
+    supabase_url: str = ""
+    supabase_key: str = ""
 
 settings = Settings()
 

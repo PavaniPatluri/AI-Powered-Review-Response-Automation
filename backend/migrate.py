@@ -15,57 +15,59 @@ def load_local_data():
         return None
 
 async def migrate():
-    print("🚀 Starting Migration to Supabase...")
+    print("Starting Migration to Supabase...")
     data = load_local_data()
     if not data:
         return
 
     # Check for credentials
-    if not db.url or not os.getenv("SUPABASE_KEY"):
-        print("❌ Error: SUPABASE_URL and SUPABASE_KEY must be set in your .env file.")
+    from database import settings
+    if not settings.supabase_url or not settings.supabase_key:
+        print("Error: SUPABASE_URL and SUPABASE_KEY must be set in your .env file.")
+        print(f"Debug: URL={settings.supabase_url}, KEY={'Set' if settings.supabase_key else 'Empty'}")
         return
 
     # 1. Migrate Profiles
-    print("📦 Migrating Profiles...")
+    print("Migrating Profiles...")
     profiles = data.get("business_profiles", [])
     if not profiles and data.get("business_profile"):
         profiles = [data["business_profile"]]
     
     if profiles:
         res = await db.upsert("profiles", profiles)
-        print(f"✅ Migrated {len(profiles)} profiles.")
+        print(f"Migrated {len(profiles)} profiles.")
 
     # 2. Migrate Prompts
-    print("📦 Migrating Prompts...")
+    print("Migrating Prompts...")
     prompts = data.get("prompts", [])
     if prompts:
         # Pydantic dicts might be nested, we just need the flat list for upsert
         res = await db.upsert("prompts", prompts)
-        print(f"✅ Migrated {len(prompts)} prompts.")
+        print(f"Migrated {len(prompts)} prompts.")
 
     # 3. Migrate Rules
-    print("📦 Migrating Rules...")
+    print("Migrating Rules...")
     rules = data.get("automation_rules", [])
     if rules:
         res = await db.upsert("rules", rules)
-        print(f"✅ Migrated {len(rules)} rules.")
+        print(f"Migrated {len(rules)} rules.")
 
     # 4. Migrate Reviews
-    print("📦 Migrating Reviews...")
+    print("Migrating Reviews...")
     reviews = data.get("reviews", [])
     if reviews:
         # Reviews can be many, upsert in chunks if needed, but for now do all
         res = await db.upsert("reviews", reviews)
-        print(f"✅ Migrated {len(reviews)} reviews.")
+        print(f"Migrated {len(reviews)} reviews.")
 
     # 5. Migrate Config
-    print("📦 Migrating System Config...")
+    print("Migrating System Config...")
     config = data.get("system_config")
     if config:
         res = await db.upsert("config", [{"id": "main", "gemini_api_key": config.get("gemini_api_key")}])
-        print("✅ Migrated system configuration.")
+        print("Migrated system configuration.")
 
-    print("\n🎉 Migration Complete! Your cloud database is now in sync.")
+    print("\nMigration Complete! Your cloud database is now in sync.")
 
 if __name__ == "__main__":
     asyncio.run(migrate())
