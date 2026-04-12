@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Radio, Zap, Star, AlertCircle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Radio, Zap, Star, Activity, TrendingUp, Info } from 'lucide-react';
 import { fetchRealtimeReview } from '../api';
 
 const BUSINESS_COLORS = {
@@ -11,22 +12,8 @@ const BUSINESS_ICONS = {
   Restaurant: '🍽️', Hotel: '🏨', Clinic: '🏥', Salon: '💇', Theater: '🎭'
 };
 
-const SentimentIcon = ({ s }) => {
-  if (s === 'Positive') return <span style={{ color: '#34d399' }}>😊</span>;
-  if (s === 'Negative') return <span style={{ color: '#f87171' }}>😤</span>;
-  return <span style={{ color: '#60a5fa' }}>😐</span>;
-};
-
 const RealtimeView = ({ reviews = [] }) => {
-  const [pulseCount, setPulseCount] = useState(0);
-  const isPolling = true; // Added to fix ReferenceError
-
-  useEffect(() => {
-    setPulseCount(reviews.length);
-  }, [reviews.length]);
-
-  const liveReviews = reviews.slice(0, 15);
-
+  const isPolling = true;
 
   const stats = {
     total: reviews.length,
@@ -35,100 +22,155 @@ const RealtimeView = ({ reviews = [] }) => {
     avgRating: reviews.length ? (reviews.reduce((a, b) => a + (b.rating || 0), 0) / reviews.length).toFixed(1) : '—'
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
+  const liveReviews = reviews.slice(0, 15);
+
   return (
-    <div className="animate-fade-in">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 className="page-title">Live Review Feed</h1>
-          <p className="page-subtitle">Real-time stream of incoming customer reviews across all platforms</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(99, 102, 241, 0.1)', padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-          <div className="live-dot" />
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-light)', letterSpacing: '1px' }}>NEURAL SYNC ACTIVE</span>
-        </div>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="realtime-view"
+    >
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3.5rem' }}>
+        <motion.div variants={itemVariants}>
+          <h1 className="aura-header">Live Intelligence</h1>
+          <p className="aura-subheader">Real-time neural stream of incoming reviews across all clusters.</p>
+        </motion.div>
+        <motion.div 
+          variants={itemVariants} 
+          className="glass-pill" 
+          style={{ height: '48px', padding: '0 1.5rem', background: 'rgba(167, 139, 250, 0.1)' }}
+        >
+          <div className="live-dot" style={{ background: 'var(--primary-light)', boxShadow: '0 0 10px var(--primary-glow)' }} />
+          <span className="label-caps" style={{ color: 'var(--primary-light)', fontSize: '0.7rem' }}>NEURAL SYNC ACTIVE</span>
+        </motion.div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
+      <div className="grid-4" style={{ marginBottom: '3.5rem', gap: '1.5rem' }}>
         {[
-          { label: 'Reviews Received', value: stats.total, color: '#6366f1', icon: <Zap size={18} /> },
-          { label: 'Positive', value: stats.positive, color: '#10b981', icon: '😊' },
-          { label: 'Negative', value: stats.negative, color: '#ef4444', icon: '😤' },
-          { label: 'Avg Rating', value: stats.avgRating, color: '#f59e0b', icon: <Star size={18} fill="#f59e0b" strokeWidth={0} /> },
+          { label: 'NODES RECEIVED', value: stats.total, color: '#6366f1', icon: <Zap size={20} /> },
+          { label: 'POSITIVE RESONANCE', value: stats.positive, color: '#10b981', icon: <TrendingUp size={20} /> },
+          { label: 'NEGATIVE DIFFUSION', value: stats.negative, color: '#ef4444', icon: <Info size={20} /> },
+          { label: 'AVERAGE RADIANCE', value: stats.avgRating, color: '#f59e0b', icon: <Star size={20} fill="#f59e0b" stroke="none" /> },
         ].map((s, i) => (
-          <div key={i} className="stat-card" style={{ animationDelay: `${i * 0.1}s` }}>
-            <div className="stat-card-glow" style={{ background: s.color }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ color: s.color, fontSize: '1.25rem' }}>{s.icon}</span>
-              {isPolling && i === 0 && <span className="live-label"><span className="live-dot" />LIVE</span>}
+          <motion.div 
+            key={i} 
+            variants={itemVariants}
+            whileHover={{ y: -5, background: 'rgba(167, 139, 250, 0.05)' }}
+            className="stat-card" 
+            style={{ background: 'rgba(17, 17, 34, 0.5)', border: '1px solid rgba(167, 139, 250, 0.05)', padding: '2rem' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <span style={{ color: s.color, opacity: 0.8 }}>{s.icon}</span>
+              {isPolling && i === 0 && <span className="glass-pill" style={{ fontSize: '0.6rem', padding: '0.2rem 0.6rem' }}>LIVE</span>}
             </div>
-            <div className="stat-number" style={{ color: s.color, fontSize: '2rem' }}>{s.value}</div>
-            <div className="stat-label">{s.label}</div>
-          </div>
+            <div className="stat-number" style={{ color: '#fff', fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.25rem' }}>{s.value}</div>
+            <div className="label-caps" style={{ opacity: 0.5, fontSize: '0.65rem' }}>{s.label}</div>
+          </motion.div>
         ))}
       </div>
 
       {/* Feed */}
-      <div className="glass-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontFamily: 'Outfit', fontWeight: 700 }}>Incoming Reviews</h3>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <span className="live-label">
-              <span className="live-dot" /> Global synchronization enabled
-            </span>
+      <motion.div variants={itemVariants} className="glass-card" style={{ padding: '2.5rem', background: 'rgba(17, 17, 34, 0.4)', borderRadius: '2.5rem', border: '1px solid rgba(167, 139, 250, 0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Activity size={18} color="var(--primary-light)" />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>Incoming Strategic Nodes</h3>
           </div>
-          </div>
+          <span className="glass-pill" style={{ opacity: 0.5 }}>
+            GLOBAL SYNC ENABLED
+          </span>
         </div>
 
-        <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-          {liveReviews.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-              <Radio size={40} style={{ marginBottom: '1rem', opacity: 0.3 }} />
-              <p>Waiting for incoming reviews...</p>
-            </div>
-          ) : (
-            liveReviews.map((review, i) => {
-              const bColor = BUSINESS_COLORS[review.business_type] || BUSINESS_COLORS.default;
-              const bIcon = BUSINESS_ICONS[review.business_type] || '⭐';
-              const initials = review.author?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-              return (
-                <div key={review.id || i} className="realtime-item" style={{ borderLeft: `3px solid ${bColor}20` }}>
-                  <div className="realtime-avatar" style={{ background: `${bColor}25`, color: bColor }}>
-                    {initials}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem', flexWrap: 'wrap', gap: '0.375rem' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{review.author}</span>
-                      <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', flexShrink: 0 }}>
-                        <span className={`badge badge-${review.sentiment?.toLowerCase()}`}>{review.sentiment}</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{review.date?.slice(-5)}</span>
+        <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '1rem' }}>
+          <AnimatePresence mode="popLayout">
+            {liveReviews.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{ textAlign: 'center', padding: '8rem 2rem', color: 'var(--text-muted)' }}
+              >
+                <Radio size={48} className="animate-pulse" style={{ marginBottom: '2rem', opacity: 0.2 }} />
+                <p className="label-caps" style={{ opacity: 0.4 }}>Waiting for incoming neural signals...</p>
+              </motion.div>
+            ) : (
+              liveReviews.map((review, i) => {
+                const bColor = BUSINESS_COLORS[review.business_type] || BUSINESS_COLORS.default;
+                const bIcon = BUSINESS_ICONS[review.business_type] || '⭐';
+                const initials = review.author?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                return (
+                  <motion.div 
+                    key={review.id || i}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4 }}
+                    className="realtime-item" 
+                    style={{ 
+                      borderLeft: `3px solid ${bColor}40`, 
+                      background: 'rgba(0,0,0,0.2)', 
+                      borderRadius: '1.25rem',
+                      padding: '1.5rem',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      gap: '1.5rem'
+                    }}
+                  >
+                    <div className="realtime-avatar" style={{ background: `${bColor}20`, color: bColor, width: '48px', height: '48px', borderRadius: '1rem', fontWeight: 800, fontSize: '0.9rem' }}>
+                      {initials}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fff' }}>{review.author}</span>
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                          <span className="glass-pill" style={{ background: `${bColor}10`, color: bColor, border: `1px solid ${bColor}20`, fontSize: '0.65rem' }}>{review.sentiment.toUpperCase()}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>{review.date?.slice(-5)}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.75rem' }}>
+                        {[...Array(5)].map((_, j) => (
+                          <Star key={j} size={12} fill={j < review.rating ? '#fbbf24' : 'rgba(255,255,255,0.05)'} stroke="none" />
+                        ))}
+                      </div>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '1rem' }}>
+                        {review.content}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ fontSize: '1rem' }}>{bIcon}</span>
+                          <span className="label-caps" style={{ fontSize: '0.65rem', color: 'var(--text-dim)' }}>{review.business_type}</span>
+                        </div>
+                        <span style={{ color: 'rgba(255,255,255,0.1)' }}>|</span>
+                        <span className="label-caps" style={{ fontSize: '0.65rem', color: 'var(--text-dim)', opacity: 0.6 }}>{review.platform}</span>
+                        {review.is_new && (
+                          <span className="glass-pill" style={{ marginLeft: 'auto', background: 'rgba(167,139,250,0.1)', color: 'var(--primary-light)', fontSize: '0.6rem', border: '1px solid rgba(167,139,250,0.2)' }}>NEW NODAL DATA</span>
+                        )}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.4rem' }}>
-                      {[...Array(5)].map((_, j) => (
-                        <Star key={j} size={11} fill={j < review.rating ? '#fbbf24' : 'rgba(255,255,255,0.1)'} stroke="none" />
-                      ))}
-                    </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.5 }}>
-                      {review.content?.slice(0, 120)}{review.content?.length > 120 ? '...' : ''}
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.375rem', marginTop: '0.5rem' }}>
-                      <span style={{ fontSize: '0.7rem' }}>{bIcon}</span>
-                      <span style={{ fontSize: '0.7rem', color: bColor, fontWeight: 600 }}>{review.business_type}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>· {review.platform}</span>
-                    </div>
-                  </div>
-                  {review.is_new && (
-                    <span style={{ fontSize: '0.6rem', background: 'rgba(99,102,241,0.15)', color: 'var(--primary-light)', padding: '0.15rem 0.4rem', borderRadius: '0.3rem', fontWeight: 700, flexShrink: 0 }}>NEW</span>
-                  )}
-                </div>
-              );
-            })
-          )}
+                  </motion.div>
+                );
+              })
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default RealtimeView;
   );
 };
 
