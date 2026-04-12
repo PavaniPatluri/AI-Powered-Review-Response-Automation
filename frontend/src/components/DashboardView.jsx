@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Star, MessageSquare, CheckCircle, Clock, Download, RefreshCw, Zap, Activity, ShieldCheck, AlertCircle, Cpu, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Star, MessageSquare, CheckCircle, Clock, Download, RefreshCw, Zap, Activity, ShieldCheck, AlertCircle, Cpu, Target, Brain } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import { fetchTrends, EXPORT_REVIEWS_URL } from '../api';
 import DashboardCore from './DashboardCore';
@@ -90,24 +90,24 @@ const DashboardView = ({ reviews, onExport }) => {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
-      {/* 3D Core Hero Section */}
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2rem', minHeight: '400px', display: 'flex', position: 'relative' }}>
-        <div style={{ flex: 1, padding: '3rem', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      {/* Zen Hero Section */}
+      <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2.5rem', minHeight: '440px', display: 'flex', position: 'relative', border: 'none', background: 'rgba(17, 17, 34, 0.4)' }}>
+        <div style={{ flex: 1.2, padding: '4rem', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <motion.div variants={itemVariants}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <span className="badge badge-positive" style={{ fontSize: '0.75rem', padding: '0.4rem 1rem' }}>🚀 SYSTEM ONLINE</span>
-              <span style={{ color: 'var(--text-dim)', fontSize: '0.8rem' }}>• {now}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <span className="badge" style={{ background: 'rgba(167, 139, 250, 0.1)', color: 'var(--primary-light)', fontSize: '0.7rem', padding: '0.4rem 1.25rem', border: '1px solid rgba(167, 139, 250, 0.2)', borderRadius: '2rem' }}>AURA SYSTEM ONLINE</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>{now}</span>
             </div>
-            <h1 className="page-title" style={{ fontSize: '3.5rem', marginBottom: '1rem', lineHeight: 1 }}>Review Catalyst Dashboard</h1>
-            <p className="page-subtitle" style={{ fontSize: '1.1rem', maxWidth: '500px', opacity: 0.8 }}>
-              Synchronizing real-time review intelligence across {Object.keys(byBusiness).length} business clusters.
+            <h1 className="page-title" style={{ fontSize: '4.2rem', marginBottom: '1.25rem', lineHeight: 0.9, letterSpacing: '-2px' }}>Review Catalyst</h1>
+            <p className="page-subtitle" style={{ fontSize: '1.15rem', maxWidth: '520px', opacity: 0.7, lineHeight: 1.5 }}>
+              Sophisticated real-time review intelligence. Synchronizing neural clusters across {Object.keys(byBusiness).length} business locations.
             </p>
             
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
-              <button className="btn btn-primary" onClick={onExport} style={{ padding: '0.875rem 2rem' }}>
-                <Download size={18} /> GENERATE REPORT
+            <div style={{ display: 'flex', gap: '1.25rem', marginTop: '3rem' }}>
+              <button className="btn btn-primary" onClick={onExport} style={{ padding: '1rem 2.5rem', borderRadius: '1.5rem', fontSize: '0.9rem' }}>
+                <Download size={18} /> EXPORT INSIGHTS
               </button>
-              <button className="btn btn-outline" onClick={handleRefreshInsights} disabled={loading} style={{ padding: '0.875rem 1.5rem' }}>
+              <button className="btn btn-outline" onClick={handleRefreshInsights} disabled={loading} style={{ padding: '1rem 1.5rem', borderRadius: '1.5rem', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                 <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
               </button>
             </div>
@@ -115,77 +115,75 @@ const DashboardView = ({ reviews, onExport }) => {
         </div>
         
         <div style={{ flex: 1, position: 'relative' }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, rgba(99, 102, 241, 0.15), transparent 70%)', zIndex: 1 }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, rgba(167, 139, 250, 0.1), transparent 75%)', zIndex: 1 }} />
           <DashboardCore intensity={trends?.score || 70} />
         </div>
       </div>
 
-      {/* KPI Staggered Row */}
-      <div className="grid-4" style={{ marginBottom: '2rem' }}>
+      {/* Zen KPI Nodes */}
+      <div className="grid-4" style={{ marginBottom: '2.5rem', gap: '1.5rem' }}>
         {[
-          { label: 'Intelligence Core', value: total, color: 'var(--primary)', icon: <Activity size={20} />, status: 'ACTIVE' },
-          { label: 'Sentiment Index', value: `${avgRating}★`, color: 'var(--accent-amber)', icon: <Star size={20} />, status: 'SYNCED' },
-          { label: 'Auto-Response', value: `${responseRate}%`, color: 'var(--accent-green)', icon: <Zap size={20} />, status: 'ONLINE' },
-          { label: 'Neural Backlog', value: pending, color: 'var(--accent-red)', icon: <MessageSquare size={20} />, status: 'QUEUED' },
+          { label: 'Intelligence Core', value: total, color: 'var(--primary)', icon: <Cpu size={20} />, status: 'ACTIVE' },
+          { label: 'Sentiment Index', value: `${avgRating}★`, color: 'var(--accent-cyan)', icon: <Star size={20} />, status: 'SYNCED' },
+          { label: 'Auto-Response', value: `${responseRate}%`, color: 'var(--primary-light)', icon: <Zap size={20} />, status: 'ONLINE' },
+          { label: 'Neural Backlog', value: pending, color: 'var(--text-muted)', icon: <Clock size={20} />, status: 'QUEUED' },
         ].map((s, i) => (
-          <motion.div key={i} variants={itemVariants} className="stat-card" style={{ borderTop: `2px solid ${s.color}` }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div style={{ color: s.color, opacity: 0.8 }}>{s.icon}</div>
-                <span style={{ fontSize: '0.6rem', color: s.color, fontWeight: 800, letterSpacing: '1px' }}>{s.status}</span>
+          <motion.div key={i} variants={itemVariants} className="stat-card" style={{ background: 'rgba(17, 17, 34, 0.5)', border: '1px solid rgba(167, 139, 250, 0.05)', padding: '2rem' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div style={{ color: s.color, opacity: 0.9 }}>{s.icon}</div>
+                <span style={{ fontSize: '0.65rem', color: s.color, fontWeight: 800, letterSpacing: '2px', opacity: 0.6 }}>{s.status}</span>
              </div>
-             <div className="stat-number" style={{ fontSize: '2.8rem' }}>{s.value}</div>
-             <div className="stat-label">{s.label}</div>
+             <div className="stat-number" style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '0.5rem' }}>{s.value}</div>
+             <div className="stat-label" style={{ fontSize: '0.75rem', opacity: 0.5, letterSpacing: '1px' }}>{s.label}</div>
           </motion.div>
         ))}
       </div>
 
       {/* Interactive Charts Row */}
-      <div className="grid-2" style={{ marginBottom: '2rem', gap: '1.5rem' }}>
+      <div className="grid-2" style={{ marginBottom: '2.5rem', gap: '1.5rem' }}>
         {/* Timeline Chart */}
-        <motion.div variants={itemVariants} className="glass-card luxe-card" style={{ padding: '2rem', height: '400px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
-            <TrendingUp size={18} color="var(--accent-cyan)" /> Sentiment Frequency Metrics
+        <motion.div variants={itemVariants} className="glass-card" style={{ padding: '2.5rem', height: '440px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(167, 139, 250, 0.05)' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+            <Activity size={18} color="var(--primary)" /> SENTIMENT FREQUENCY
           </h3>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorPos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorNeg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f87171" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#f87171" stopOpacity={0}/>
+                  <linearGradient id="colorCyan" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent-cyan)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="var(--accent-cyan)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)" fontSize={11} tickMargin={10} axisLine={false} tickLine={false} />
-                <YAxis stroke="rgba(255,255,255,0.2)" fontSize={11} axisLine={false} tickLine={false} />
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="date" stroke="rgba(167, 139, 250, 0.2)" fontSize={11} tickMargin={10} axisLine={false} tickLine={false} />
+                <YAxis stroke="rgba(167, 139, 250, 0.2)" fontSize={11} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(167, 139, 250, 0.05)" />
                 <RechartsTooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', color: 'var(--text-muted)' }} />
-                <Area type="monotone" dataKey="Positive" stroke="#34d399" strokeWidth={3} fillOpacity={1} fill="url(#colorPos)" />
-                <Area type="monotone" dataKey="Negative" stroke="#f87171" strokeWidth={3} fillOpacity={1} fill="url(#colorNeg)" />
+                <Area type="monotone" dataKey="Positive" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorPos)" />
+                <Area type="monotone" dataKey="Neutral" stroke="var(--accent-cyan)" strokeWidth={2} fillOpacity={1} fill="url(#colorCyan)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </motion.div>
 
         {/* Rating Distribution */}
-        <motion.div variants={itemVariants} className="glass-card insight-card" style={{ padding: '2rem', height: '400px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
-            <Star size={18} color="var(--accent-amber)" /> Star Distribution Core
+        <motion.div variants={itemVariants} className="glass-card" style={{ padding: '2.5rem', height: '440px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(167, 139, 250, 0.05)' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', fontSize: '1.1rem', fontWeight: 800 }}>
+            <Target size={18} color="var(--primary-light)" /> STAR DISTRIBUTION
           </h3>
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ratingDist} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" stroke="rgba(255,255,255,0.2)" fontSize={11} hide />
-                <YAxis dataKey="name" type="category" stroke="var(--text-sub)" fontSize={12} axisLine={false} tickLine={false} width={60} />
-                <RechartsTooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} content={<CustomTooltip />} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24} animationDuration={1500}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" stroke="var(--text-muted)" fontSize={11} axisLine={false} tickLine={false} width={70} />
+                <RechartsTooltip cursor={{fill: 'rgba(167, 139, 250, 0.03)'}} content={<CustomTooltip />} />
+                <Bar dataKey="count" radius={[0, 12, 12, 0]} barSize={26}>
                   {ratingDist.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={index > 2 ? 'var(--primary)' : 'rgba(167, 139, 250, 0.2)'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -194,87 +192,61 @@ const DashboardView = ({ reviews, onExport }) => {
         </motion.div>
       </div>
 
-      {/* AI Neural Insights Section */}
-      <motion.div variants={itemVariants} className="grid-1" style={{ marginBottom: '2rem' }}>
-        <div className="glass-card luxe-card" style={{ padding: '2.5rem', borderLeft: '4px solid var(--primary)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      {/* AI Strategist Section */}
+      <motion.div variants={itemVariants} className="grid-1" style={{ marginBottom: '4rem' }}>
+        <div className="glass-card" style={{ padding: '3.5rem', background: 'linear-gradient(135deg, rgba(17, 17, 34, 0.8), rgba(11, 11, 26, 0.9))', border: '1px solid rgba(167, 139, 250, 0.1)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                <Cpu size={20} color="var(--primary-light)" className="animate-pulse" />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.5px' }}>NEURAL STRATEGIC INTELLIGENCE</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+                <Brain size={24} color="var(--primary)" />
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-1px', textTransform: 'uppercase' }}>Neural Strategist</h3>
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Deep AI analysis across all customer touchpoints</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500 }}>Global reputation health and strategic vectors</p>
             </div>
             {trends && (
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 800, marginBottom: '0.25rem' }}>HEALTH SCORE</div>
-                <div style={{ fontSize: '2rem', fontWeight: 900, color: trends.score > 80 ? 'var(--accent-green)' : (trends.score > 60 ? 'var(--accent-amber)' : 'var(--accent-red)') }}>
-                  {trends.score}<span style={{ fontSize: '0.8rem', opacity: 0.5 }}>/100</span>
+                <div style={{ fontSize: '0.7rem', color: 'var(--primary-light)', fontWeight: 900, marginBottom: '0.5rem', opacity: 0.6, letterSpacing: '1px' }}>HEALTH INDEX</div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 950, color: 'var(--primary)' }}>
+                  {trends.score}<span style={{ fontSize: '1rem', opacity: 0.3 }}>/100</span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="grid-3" style={{ gap: '2rem' }}>
-            {/* Strategic Summary */}
+          <div className="grid-3" style={{ gap: '3rem' }}>
             <div style={{ gridColumn: 'span 1' }}>
-              <div className="label-caps" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Target size={14} /> Executive Summary
-              </div>
-              <p style={{ fontSize: '1.05rem', lineHeight: 1.6, color: 'var(--text-sub)', fontWeight: 400 }}>
-                {loading ? 'Decrypting latest trends...' : (trends?.summary || 'Connect your Gemini API key in settings to unlock deep neural insights.')}
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 900, marginBottom: '1.25rem', letterSpacing: '1px' }}>EXECUTIVE ANALYSIS</div>
+              <p style={{ fontSize: '1.1rem', lineHeight: 1.7, color: 'var(--text-sub)', fontWeight: 500 }}>
+                {loading ? 'Decrypting...' : (trends?.summary || 'Initialize Intelligence key for analysis.')}
               </p>
             </div>
 
-            {/* Themes: Strengths */}
             <div style={{ gridColumn: 'span 1' }}>
-              <div className="label-caps" style={{ marginBottom: '1rem', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <ShieldCheck size={14} /> Performance Strengths
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {loading ? [1,2,3].map(i => <div key={i} className="shimmer" style={{ height: '40px', borderRadius: '8px' }} />) : 
-                (trends?.strengths || []).map((s, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="trend-item" 
-                    style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)', padding: '0.8rem 1rem', borderRadius: '10px' }}
-                  >
-                    <div className="trend-dot" style={{ background: 'var(--accent-green)' }} />
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{s}</span>
-                  </motion.div>
+              <div style={{ color: 'var(--primary-light)', fontSize: '0.7rem', fontWeight: 900, marginBottom: '1.25rem', letterSpacing: '1px' }}>STRENGTH NODES</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {(trends?.strengths || ['Service Quality', 'Brand Loyalty']).map((s, i) => (
+                  <div key={i} style={{ background: 'rgba(167, 139, 250, 0.05)', padding: '1rem 1.25rem', borderRadius: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(167, 139, 250, 0.1)' }}>
+                    <CheckCircle size={16} color="var(--primary)" />
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{s}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Themes: Weaknesses */}
             <div style={{ gridColumn: 'span 1' }}>
-              <div className="label-caps" style={{ marginBottom: '1rem', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <AlertCircle size={14} /> Improvement Vectors
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {loading ? [1,2,3].map(i => <div key={i} className="shimmer" style={{ height: '40px', borderRadius: '8px' }} />) : 
-                (trends?.weaknesses || []).map((w, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ x: 20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="trend-item" 
-                    style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', padding: '0.8rem 1rem', borderRadius: '10px' }}
-                  >
-                    <div className="trend-dot" style={{ background: 'var(--accent-red)' }} />
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{w}</span>
-                  </motion.div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 900, marginBottom: '1.25rem', letterSpacing: '1px' }}>CHALLENGE VECTORS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {(trends?.weaknesses || ['Response Lag', 'Peak Hours']).map((w, i) => (
+                  <div key={i} style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem 1.25rem', borderRadius: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                    <AlertCircle size={16} color="var(--text-muted)" />
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-muted)' }}>{w}</span>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
       </motion.div>
-
     </motion.div>
   );
 };

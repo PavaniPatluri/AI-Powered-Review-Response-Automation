@@ -98,107 +98,93 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
         rotateX, 
         rotateY, 
         transformStyle: "preserve-3d",
-        perspective: "1000px" 
+        perspective: "1200px" 
       }}
-      initial={{ opacity: 0, scale: 0.9, y: 30 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.8, 
-        delay: index * 0.05,
-        ease: [0.23, 1, 0.32, 1]
+        duration: 1.2, 
+        delay: index * 0.08,
+        ease: [0.16, 1, 0.3, 1]
       }}
       className="review-card-3d"
+      style={{ background: 'rgba(22, 22, 42, 0.4)', borderRadius: '2rem' }}
     >
       {/* 3D Inner Content */}
-      <div style={{ transform: "translateZ(30px)" }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: `linear-gradient(90deg, transparent, ${bColor}40, transparent)`, pointerEvents: 'none' }} />
+      <div style={{ transform: "translateZ(40px)", padding: '2rem' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1.5px', background: `linear-gradient(90deg, transparent, var(--primary), transparent)`, opacity: 0.1, pointerEvents: 'none' }} />
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span className={`badge badge-${review.sentiment?.toLowerCase()}`}>{review.sentiment}</span>
-            {review.language_code && review.language_code !== 'en' && (
-              <span className="badge badge-neutral" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--primary-light)' }}>
-                <Globe size={11} /> {review.language_code.toUpperCase()}
-              </span>
-            )}
-            <span className={`business-badge business-badge-${bType.toLowerCase()}`}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <span className={`badge badge-${review.sentiment?.toLowerCase()}`} style={{ border: 'none', background: 'rgba(167, 139, 250, 0.1)', color: 'var(--primary-light)' }}>{review.sentiment}</span>
+            <span className="business-badge" style={{ background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-sub)', border: '1px solid rgba(255,255,255,0.05)' }}>
               {bIcon} {bType}
             </span>
           </div>
-          <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 600 }}>{review.date}</span>
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>{review.date}</span>
         </div>
 
         {/* Author & Stars */}
-        <div style={{ marginBottom: '1.25rem', transform: "translateZ(10px)" }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-            <h4 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{review.author}</h4>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', letterSpacing: '1px' }}>{review.platform?.toUpperCase() || review.source?.toUpperCase()}</span>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <h4 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.5px' }}>{review.author}</h4>
+            <span style={{ fontSize: '0.65rem', color: 'var(--primary-light)', fontWeight: 800, opacity: 0.6 }}>{review.platform?.toUpperCase()}</span>
           </div>
-          <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             {[...Array(5)].map((_, i) => (
-              <Star key={i} size={14} fill={i < review.rating ? '#fbbf24' : 'rgba(255,255,255,0.05)'} stroke="none" />
+              <Star key={i} size={15} fill={i < review.rating ? 'var(--primary)' : 'rgba(255,255,255,0.03)'} stroke="none" />
             ))}
-            <span style={{ fontSize: '0.8rem', color: ratingColor, marginLeft: '0.5rem', fontWeight: 900 }}>{review.rating}.0</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--primary-light)', marginLeft: '0.75rem', fontWeight: 900 }}>{review.rating}.0</span>
           </div>
         </div>
 
-        {/* Categories Tags */}
-        {review.categories && review.categories.length > 0 && (
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            {review.categories.map(c => (
-              <span key={c} style={{ fontSize: '0.65rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '0.25rem 0.6rem', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: bColor }} /> {c}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Review Text */}
         <div style={{
-          padding: '1.25rem',
-          borderRadius: '1rem',
-          background: 'rgba(0,0,0,0.3)',
-          borderLeft: `3px solid ${bColor}`,
-          marginBottom: '1.5rem',
-          fontSize: '0.9rem',
+          padding: '1.5rem',
+          borderRadius: '1.5rem',
+          background: 'rgba(11, 11, 26, 0.4)',
+          border: '1px solid rgba(255, 255, 255, 0.02)',
+          marginBottom: '2rem',
+          fontSize: '0.95rem',
           color: 'var(--text-sub)',
-          lineHeight: 1.7,
-          boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)'
+          lineHeight: 1.8,
+          fontStyle: 'italic',
+          letterSpacing: '0.01em'
         }}>
           "{review.content}"
         </div>
 
         {/* Action Area */}
-        <div style={{ transform: "translateZ(20px)" }}>
+        <div style={{ transform: "translateZ(25px)" }}>
           {isPublished ? (
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass-card" style={{ padding: '1rem', background: 'rgba(16,185,129,0.05)', borderColor: 'rgba(16,185,129,0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', marginBottom: '0.5rem' }}>
-                <ShieldCheck size={16} /> <span style={{ fontWeight: 800, fontSize: '0.75rem', letterSpacing: '1px' }}>AI VERIFIED RESPONSE</span>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ padding: '1.5rem', background: 'rgba(167, 139, 250, 0.05)', borderRadius: '1.5rem', border: '1px solid rgba(167, 139, 250, 0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+                <CheckCircle size={18} /> <span style={{ fontWeight: 900, fontSize: '0.7rem', letterSpacing: '2px' }}>AURA GENERATED</span>
               </div>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>{response}</p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', lineHeight: 1.6 }}>{response}</p>
             </motion.div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '4px' }}>
                 {TONES.map(t => (
-                  <button key={t} className={`tone-pill ${tone === t ? 'active' : ''}`} onClick={() => setTone(t)} style={{ whiteSpace: 'nowrap' }}>{t}</button>
+                  <button key={t} className={`tone-pill ${tone === t ? 'active' : ''}`} onClick={() => setTone(t)} style={{ borderRadius: '2rem', padding: '0.4rem 1rem', fontSize: '0.7rem' }}>{t}</button>
                 ))}
               </div>
               
               {!response ? (
-                <button className="btn btn-primary" onClick={() => generateAIResponse()} style={{ height: '52px', background: `linear-gradient(135deg, ${bColor}, var(--primary-dark))` }}>
-                  {isGenerating ? <Loader className="animate-spin" /> : <Zap size={16} />} GENERATE INTELLIGENT DRAFT
+                <button className="btn btn-primary" onClick={() => generateAIResponse()} style={{ height: '56px', borderRadius: '1.5rem', fontSize: '0.85rem', letterSpacing: '0.5px' }}>
+                  {isGenerating ? <Loader className="animate-spin" /> : <Zap size={18} />} ANALYZE & DRAFT
                 </button>
               ) : (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
-                    <textarea className="input-field" style={{ minHeight: '130px', background: 'rgba(255,255,255,0.02)' }} value={response} onChange={handleTextChange} />
-                    <span style={{ position: 'absolute', bottom: '0.5rem', right: '0.75rem', fontSize: '0.65rem', color: 'var(--text-dim)' }}>{charCount} CHARS</span>
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+                  <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                    <textarea className="input-field" style={{ minHeight: '140px', background: 'rgba(11, 11, 26, 0.5)', borderRadius: '1.5rem', padding: '1.25rem' }} value={response} onChange={handleTextChange} />
+                    <span style={{ position: 'absolute', bottom: '1rem', right: '1.25rem', fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700 }}>{charCount} CHARS</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="btn btn-success" style={{ flex: 1 }} onClick={handlePublish}>PUBLISH RESPONSE</button>
-                    <button className="btn btn-outline" style={{ width: '48px' }} onClick={() => generateAIResponse()}><RotateCcw size={16} /></button>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button className="btn btn-primary" style={{ flex: 1, borderRadius: '1.5rem', height: '52px' }} onClick={handlePublish}>PUBLISH</button>
+                    <button className="btn btn-outline" style={{ width: '52px', height: '52px', borderRadius: '1.25rem' }} onClick={() => generateAIResponse()}><RotateCcw size={18} /></button>
                   </div>
                 </motion.div>
               )}
@@ -206,6 +192,8 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
           )}
         </div>
       </div>
+    </motion.div>
+  );
     </motion.div>
   );
 };

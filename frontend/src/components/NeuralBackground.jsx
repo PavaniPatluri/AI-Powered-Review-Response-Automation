@@ -84,9 +84,9 @@ const NeuralBackground = () => {
       >
         <ambientLight intensity={0.5} />
         {/* Abstract Particle Layers */}
-        <NeuralParticles count={3000} radius={6} color="#6366f1" />
+        <NeuralParticles count={3000} radius={6} color="#a78bfa" />
         <NeuralParticles count={1500} radius={8} color="#8b5cf6" />
-        <NeuralParticles count={1000} radius={12} color="#06b6d4" />
+        <NeuralParticles count={1000} radius={12} color="#0b0b1a" />
         
         {/* Subtle camera movement tied to mouse */}
         <CameraRig mouse={mousePos} />

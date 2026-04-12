@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ExternalLink, CheckCircle, Clock, AlertCircle, RefreshCw, Globe } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, CheckCircle, Clock, AlertCircle, RefreshCw, Globe, Server, Link, Activity } from 'lucide-react';
 
 const PLATFORMS = [
   {
@@ -129,115 +130,158 @@ const IntegrationsView = () => {
   const connected = connectedPlatforms.length;
   const totalReviews = PLATFORMS.reduce((a, b) => a + b.reviews, 0);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
   return (
-    <div className="animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Platform Integrations</h1>
-        <p className="page-subtitle">Connect your review platforms to centralize and automate all responses</p>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="integrations-view"
+    >
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3.5rem' }}>
+        <motion.div variants={itemVariants}>
+          <h1 className="aura-header">Node Integrations</h1>
+          <p className="aura-subheader">Connect global review clusters to the central intelligence engine.</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="glass-pill" style={{ height: '48px', padding: '0 1.5rem' }}>
+          <Activity size={16} /> SYSTEM STATUS: OPTIMAL
+        </motion.div>
       </div>
 
       {/* Summary Row */}
-      <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
+      <div className="grid-3" style={{ marginBottom: '3.5rem', gap: '2rem' }}>
         {[
-          { label: 'Connected Platforms', value: connected, color: '#10b981' },
-          { label: 'Reviews Synced', value: totalReviews, color: '#6366f1' },
-          { label: 'Platforms Available', value: PLATFORMS.length, color: '#f59e0b' },
+          { label: 'Active Clusters', value: connected, color: 'var(--primary-light)', icon: <Link size={20} /> },
+          { label: 'Intelligence Synced', value: totalReviews, color: 'var(--accent-cyan)', icon: <Server size={20} /> },
+          { label: 'Available Nodes', value: PLATFORMS.length, color: 'var(--text-muted)', icon: <Globe size={20} /> },
         ].map((s, i) => (
-          <div key={i} className="stat-card">
-            <div className="stat-card-glow" style={{ background: s.color }} />
-            <div className="stat-number" style={{ color: s.color, fontSize: '2rem' }}>{s.value}</div>
-            <div className="stat-label">{s.label}</div>
-          </div>
+          <motion.div 
+            key={i} 
+            variants={itemVariants}
+            whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}
+            className="stat-card" 
+            style={{ background: 'rgba(17, 17, 34, 0.5)', border: '1px solid rgba(167, 139, 250, 0.05)', padding: '2.5rem' }}
+          >
+            <div style={{ color: s.color, marginBottom: '1.5rem', opacity: 0.8 }}>{s.icon}</div>
+            <div className="stat-number" style={{ color: '#fff', fontSize: '3rem', fontWeight: 900, marginBottom: '0.5rem' }}>{s.value}</div>
+            <div className="stat-label" style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '2px', opacity: 0.5 }}>{s.label}</div>
+          </motion.div>
         ))}
       </div>
 
       {/* Platform Cards */}
-      <div className="integration-grid">
-        {PLATFORMS.map((p) => {
-          const isConnected = connectedPlatforms.includes(p.id);
-          const status = isConnected ? 'connected' : p.status;
-          
-          return (
-            <div key={p.id} className="glass-card integration-card animate-fade-in" style={{ padding: '1.75rem 1.5rem' }}>
-              {/* Glow effect */}
-              <div style={{
-                position: 'absolute', top: -40, right: -40, width: 120, height: 120,
-                borderRadius: '50%', background: p.color, opacity: 0.07, filter: 'blur(30px)', pointerEvents: 'none'
-              }} />
+      <motion.div variants={itemVariants} className="integration-grid" style={{ gap: '2rem' }}>
+        <AnimatePresence>
+          {PLATFORMS.map((p, idx) => {
+            const isConnected = connectedPlatforms.includes(p.id);
+            const status = isConnected ? 'connected' : p.status;
+            
+            return (
+              <motion.div 
+                key={p.id} 
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                className="glass-card integration-card" 
+                style={{ padding: '2.5rem 2rem', border: '1px solid rgba(167, 139, 250, 0.08)' }}
+              >
+                {/* Glow effect */}
+                <div style={{
+                  position: 'absolute', top: -30, right: -30, width: 100, height: 100,
+                  borderRadius: '50%', background: p.color, opacity: 0.05, filter: 'blur(30px)', pointerEvents: 'none'
+                }} />
 
-              <div className="platform-logo" style={{ background: p.bg }}>
-                <span>{p.icon}</span>
-              </div>
+                <div className="platform-logo" style={{ background: p.bg, width: '64px', height: '64px', borderRadius: '1.25rem', marginBottom: '1.5rem' }}>
+                  <span style={{ fontSize: '1.75rem' }}>{p.icon}</span>
+                </div>
 
-              <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '1rem', marginBottom: '0.3rem' }}>{p.name}</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem', lineHeight: 1.5 }}>{p.description}</p>
+                <h3 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', color: '#fff' }}>{p.name}</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6, minHeight: '3rem' }}>{p.description}</p>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <StatusBadge status={status} />
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                  {p.reviews > 0 ? `${p.reviews} reviews` : '—'}
-                </span>
-              </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                  <StatusBadge status={status} />
+                  <span className="badge" style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-dim)', fontSize: '0.7rem' }}>
+                    {p.reviews > 0 ? `${p.reviews} DATA NODES` : 'EMPTY'}
+                  </span>
+                </div>
 
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>
-                🕐 Last sync: {status === 'connected' ? p.lastSync : 'Not connected'}
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {status === 'connected' ? (
-                  <>
-                    <button
-                      className="btn btn-outline"
-                      style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem' }}
-                      onClick={() => handleSync(p.id)}
-                      disabled={syncing === p.id}
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: 'auto' }}>
+                  {status === 'connected' ? (
+                    <>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="btn btn-outline"
+                        style={{ flex: 1, fontSize: '0.75rem', height: '44px', borderRadius: '1rem' }}
+                        onClick={() => handleSync(p.id)}
+                        disabled={syncing === p.id}
+                      >
+                        {syncing === p.id
+                          ? <><RefreshCw size={14} className="animate-spin" /> SYNCING...</>
+                          : <><RefreshCw size={14} /> SYNC NODE</>
+                        }
+                      </motion.button>
+                      <button className="btn btn-ghost" style={{ padding: '0 0.75rem', borderRadius: '1rem', background: 'rgba(255,255,255,0.03)' }}>
+                        <Globe size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`btn ${status === 'pending' ? 'btn-outline' : 'btn-primary'}`} 
+                      style={{ flex: 1, fontSize: '0.75rem', height: '44px', borderRadius: '1rem' }}
+                      onClick={() => handleConnect(p.id)}
+                      disabled={connecting === p.id}
                     >
-                      {syncing === p.id
-                        ? <><RefreshCw size={13} className="animate-spin" /> Syncing...</>
-                        : <><RefreshCw size={13} /> Sync Now</>
-                      }
-                    </button>
-                    <button className="btn btn-ghost" style={{ padding: '0.5rem 0.75rem' }}>
-                      <Globe size={14} />
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    className={`btn ${status === 'pending' ? 'btn-outline' : 'btn-primary'}`} 
-                    style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem' }}
-                    onClick={() => handleConnect(p.id)}
-                    disabled={connecting === p.id}
-                  >
-                    {connecting === p.id ? (
-                      <><RefreshCw size={13} className="animate-spin" /> Connecting...</>
-                    ) : (
-                      <><ExternalLink size={13} /> {status === 'pending' ? 'Authorize' : 'Connect'}</>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                      {connecting === p.id ? (
+                        <><RefreshCw size={14} className="animate-spin" /> CONNECTING...</>
+                      ) : (
+                        <><ExternalLink size={14} /> {status === 'pending' ? 'AUTHORIZE' : 'CONNECT CLUSTER'}</>
+                      )}
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </motion.div>
 
       {/* API Notice */}
-      <div className="glass-card" style={{ marginTop: '1.5rem', borderColor: 'rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.04)' }}>
-        <div style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}>
-          <Globe size={20} style={{ color: 'var(--primary-light)', flexShrink: 0, marginTop: 2 }} />
+      <motion.div 
+        variants={itemVariants}
+        className="glass-card" 
+        style={{ marginTop: '3.5rem', padding: '2.5rem', borderColor: 'rgba(167, 139, 250, 0.2)', background: 'rgba(167, 139, 250, 0.03)', borderRadius: '2rem' }}
+      >
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+          <div style={{ width: '48px', height: '48px', background: 'rgba(167, 139, 250, 0.1)', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Globe size={24} color="var(--primary-light)" />
+          </div>
           <div>
-            <h4 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.375rem' }}>
-              Google Business Profile API
+            <h4 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem', color: '#fff' }}>
+              Strategic Platform Bridge
             </h4>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-              To enable real Google Reviews sync, connect your Google Business Profile via the Google My Business API.
-              Requires OAuth 2.0 authentication and a verified business listing.
-              Once connected, new reviews will automatically appear in your inbox and trigger AI response drafts.
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.8, fontWeight: 500 }}>
+              To enable real-time intelligence sync, connect your business profiles via authorized high-level APIs.
+              Requires OAuth 2.0 verification and a synchronized business node.
+              Once the bridge is established, new reviews will automatically propagate to the **Review Intelligence** stream and trigger AI drafting.
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  );
   );
 };
 
