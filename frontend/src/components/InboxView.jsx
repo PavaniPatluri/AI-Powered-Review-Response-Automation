@@ -157,7 +157,6 @@ const InboxView = ({ reviews, rules, initialFilter = 'All' }) => {
       </motion.div>
     </motion.div>
   );
-  );
 };
 
 export default InboxView;

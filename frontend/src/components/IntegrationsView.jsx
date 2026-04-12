@@ -282,7 +282,6 @@ const IntegrationsView = () => {
       </motion.div>
     </motion.div>
   );
-  );
 };
 
 export default IntegrationsView;

@@ -118,9 +118,19 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
             <span className={`badge badge-${review.sentiment?.toLowerCase()}`} style={{ border: 'none', background: 'rgba(167, 139, 250, 0.1)', color: 'var(--primary-light)' }}>{review.sentiment}</span>
-            <span className="business-badge" style={{ background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-sub)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <span className="business-badge" style={{ background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-sub)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
               {bIcon} {bType}
             </span>
+            {review.language_code && (
+              <span className="badge" style={{ background: 'rgba(129, 140, 248, 0.05)', color: 'var(--primary-light)', opacity: 0.8, fontSize: '0.6rem', fontWeight: 900 }}>
+                <Globe size={10} style={{ marginRight: '4px' }} /> {review.language_code.toUpperCase()}
+              </span>
+            )}
+            {review.categories?.[0] && (
+              <span className="badge" style={{ background: 'rgba(34, 211, 238, 0.05)', color: 'var(--accent-cyan)', opacity: 0.8, fontSize: '0.6rem', fontWeight: 900 }}>
+                <Tag size={10} style={{ marginRight: '4px' }} /> {review.categories[0].toUpperCase()}
+              </span>
+            )}
           </div>
           <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.5px' }}>{review.date}</span>
         </div>
@@ -192,8 +202,6 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
           )}
         </div>
       </div>
-    </motion.div>
-  );
     </motion.div>
   );
 };

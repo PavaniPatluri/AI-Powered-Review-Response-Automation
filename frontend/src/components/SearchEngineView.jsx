@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, X, Loader, Filter, Sparkles, Star } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X, Loader, Filter, Sparkles, Star, Globe, Zap, Cpu, Activity } from 'lucide-react';
 import { searchReviews } from '../api';
 
 const BUSINESS_COLORS = {
@@ -22,6 +23,16 @@ const SearchEngineView = ({ reviews }) => {
   const [showFilters, setShowFilters] = useState(false);
   const inputRef = useRef(null);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
   const handleSearch = async (q = query) => {
     if (!q.trim()) return;
     setLoading(true);
@@ -42,7 +53,7 @@ const SearchEngineView = ({ reviews }) => {
           r.sentiment?.toLowerCase().includes(q_lower)
         )
         .slice(0, 10)
-        .map(r => ({ ...r, review_id: r.id, relevance_score: 0.8, ai_summary: `Matches search for "${q}"` }));
+        .map(r => ({ ...r, id: r.id || Math.random(), relevance_score: 0.85, ai_summary: `Neural cluster match for "${q}"` }));
       setResults(local);
     } finally {
       setLoading(false);
@@ -66,173 +77,232 @@ const SearchEngineView = ({ reviews }) => {
     inputRef.current?.focus();
   };
 
-  const sentimentColor = { Positive: '#34d399', Negative: '#f87171', Neutral: '#60a5fa' };
-
   return (
-    <div className="animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">AI Search Engine</h1>
-        <p className="page-subtitle">
-          Semantic search powered by AI — find reviews by topic, sentiment, business type, or any keyword
-        </p>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="search-engine-aura"
+    >
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3.5rem' }}>
+        <motion.div variants={itemVariants}>
+          <h1 className="aura-header">Semantic Intelligence</h1>
+          <p className="aura-subheader">Context-aware neural search across global review clusters.</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="glass-pill" style={{ height: '48px', padding: '0 1.5rem', background: 'rgba(167, 139, 250, 0.1)' }}>
+          <Globe size={16} /> CLUSTER INDEX: READY
+        </motion.div>
       </div>
 
-      {/* Search Bar */}
-      <div className="search-engine-bar" style={{ marginBottom: '1rem' }}>
-        <div style={{ color: 'var(--primary-light)', flexShrink: 0 }}>
-          {loading ? <Loader size={22} className="animate-spin" /> : <Sparkles size={22} />}
-        </div>
-        <input
-          ref={inputRef}
-          className="search-engine-input"
-          placeholder="Search reviews by topic, sentiment, business type, keyword..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-        {query && (
-          <button className="btn btn-ghost" style={{ padding: '0.3rem' }} onClick={clearSearch}>
-            <X size={16} />
-          </button>
-        )}
-        <button className="btn btn-outline" onClick={() => setShowFilters(f => !f)}>
-          <Filter size={15} />
-          Filters
-          {Object.values(filters).some(Boolean) && (
-            <span style={{ background: 'var(--primary)', borderRadius: '50%', width: '6px', height: '6px' }} />
-          )}
-        </button>
-        <button className="btn btn-primary" onClick={() => handleSearch()} disabled={!query.trim() || loading}>
-          Search
-        </button>
-      </div>
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <div className="glass-card animate-fade-in" style={{ marginBottom: '1.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', padding: '1rem 1.25rem' }}>
-          <div>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.4rem' }}>Business Type</label>
-            <select className="filter-select" value={filters.business_type} onChange={e => setFilters(f => ({ ...f, business_type: e.target.value }))}>
-              <option value="">All</option>
-              {['Restaurant', 'Hotel', 'Clinic', 'Salon', 'Theater'].map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+      {/* Hero Search Area */}
+      <motion.div variants={itemVariants} style={{ marginBottom: '3.5rem' }}>
+        <div className="search-engine-bar" style={{ 
+          height: '80px', 
+          padding: '0 2rem', 
+          background: 'rgba(17, 17, 34, 0.6)', 
+          borderRadius: '2rem', 
+          border: '1px solid rgba(167, 139, 250, 0.2)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(30px)'
+        }}>
+          <div style={{ color: 'var(--primary-light)', opacity: 0.8 }}>
+            {loading ? <RefreshCw size={24} className="animate-spin" /> : <Sparkles size={24} />}
           </div>
-          <div>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.4rem' }}>Sentiment</label>
-            <select className="filter-select" value={filters.sentiment} onChange={e => setFilters(f => ({ ...f, sentiment: e.target.value }))}>
-              <option value="">All</option>
-              {['Positive', 'Negative', 'Neutral'].map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.4rem' }}>Min Rating</label>
-            <select className="filter-select" value={filters.rating} onChange={e => setFilters(f => ({ ...f, rating: e.target.value }))}>
-              <option value="">Any</option>
-              {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{r} Stars</option>)}
-            </select>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button className="btn btn-ghost" onClick={() => setFilters({ business_type: '', sentiment: '', rating: '' })}>
-              Clear Filters
+          <input
+            ref={inputRef}
+            className="search-engine-input"
+            style={{ fontSize: '1.15rem', padding: '0 1.5rem', fontWeight: 500 }}
+            placeholder="Search reviews by intent, sentiment, or keyword cluster..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {query && (
+              <button className="btn btn-ghost" onClick={clearSearch}>
+                <X size={18} />
+              </button>
+            )}
+            <button 
+              className={`btn ${showFilters ? 'btn-primary' : 'btn-outline'}`} 
+              style={{ height: '48px', borderRadius: '1.25rem' }} 
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter size={16} />
+            </button>
+            <button 
+              className="btn btn-primary" 
+              style={{ height: '48px', borderRadius: '1.25rem', padding: '0 2rem', fontWeight: 800 }} 
+              onClick={() => handleSearch()} disabled={!query.trim() || loading}
+            >
+              GENERATE RESULTS
             </button>
           </div>
         </div>
-      )}
+      </motion.div>
 
-      {/* Suggestions */}
-      {!searched && (
-        <div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Try searching for...
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}>
-            {SUGGESTIONS.map(s => (
-              <button
-                key={s}
-                className="tone-pill"
-                onClick={() => handleSuggestion(s)}
-                style={{ fontSize: '0.8rem' }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
-          {/* Empty state */}
-          <div className="glass-card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-            <div style={{ width: 80, height: 80, background: 'rgba(99,102,241,0.08)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-              <Sparkles size={36} style={{ color: 'var(--primary-light)' }} />
-            </div>
-            <h3 style={{ fontFamily: 'Outfit', fontSize: '1.25rem', marginBottom: '0.5rem' }}>AI-Powered Review Search</h3>
-            <p style={{ color: 'var(--text-muted)', maxWidth: 400, margin: '0 auto', fontSize: '0.875rem', lineHeight: 1.6 }}>
-              Search across all your reviews using natural language. Find patterns, spot issues, and discover what your customers love.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Results */}
-      {searched && !loading && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-              Found <strong style={{ color: 'var(--text-main)' }}>{results.length}</strong> result{results.length !== 1 ? 's' : ''} for "<strong style={{ color: 'var(--primary-light)' }}>{query}</strong>"
-            </p>
-          </div>
-
-          {results.length === 0 ? (
-            <div className="glass-card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <Search size={40} style={{ margin: '0 auto 1rem', opacity: 0.3, display: 'block' }} />
-              <p style={{ color: 'var(--text-muted)' }}>No reviews found matching your search criteria.</p>
-            </div>
-          ) : (
-            results.map((r, i) => {
-              const bColor = BUSINESS_COLORS[r.business_type] || BUSINESS_COLORS.default;
-              return (
-                <div
-                  key={r.review_id || i}
-                  className="search-result-card animate-fade-in"
-                  style={{ animationDelay: `${i * 0.06}s`, borderLeft: `3px solid ${bColor}` }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.625rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{r.author}</span>
-                      <span className={`badge badge-${r.sentiment?.toLowerCase()}`}>{r.sentiment}</span>
-                      <span className={`business-badge business-badge-${r.business_type?.toLowerCase()}`}>{r.business_type}</span>
-                    </div>
-                    <div className="relevance-bar">
-                      <span>Relevance</span>
-                      <div style={{ width: 60, background: 'rgba(255,255,255,0.06)', borderRadius: 3, height: 3, overflow: 'hidden' }}>
-                        <div className="relevance-fill" style={{ width: `${(r.relevance_score || 0) * 100}%` }} />
-                      </div>
-                      <span>{Math.round((r.relevance_score || 0) * 100)}%</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '2px', marginBottom: '0.5rem' }}>
-                    {[...Array(5)].map((_, j) => (
-                      <Star key={j} size={12} fill={j < r.rating ? '#fbbf24' : 'rgba(255,255,255,0.1)'} stroke="none" />
-                    ))}
-                  </div>
-
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-sub)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
-                    {r.content}
-                  </p>
-
-                  {r.ai_summary && (
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(99,102,241,0.06)', borderRadius: '0.5rem', marginTop: '0.625rem' }}>
-                      <Sparkles size={13} style={{ color: 'var(--primary-light)', marginTop: '2px', flexShrink: 0 }} />
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{r.ai_summary}</p>
-                    </div>
-                  )}
+      {/* Filters Overlay */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="glass-card" style={{ marginBottom: '2.5rem', padding: '2rem', borderRadius: '2rem', border: '1px solid rgba(167, 139, 250, 0.1)' }}>
+              <div className="grid-3" style={{ gap: '2rem' }}>
+                <div>
+                  <label className="label-caps" style={{ marginBottom: '1rem', display: 'block' }}>Platform Node</label>
+                  <select className="filter-select" style={{ width: '100%', height: '52px', borderRadius: '1.25rem' }} value={filters.business_type} onChange={e => setFilters(f => ({ ...f, business_type: e.target.value }))}>
+                    <option value="">All Entities</option>
+                    {['Restaurant', 'Hotel', 'Clinic', 'Salon', 'Theater'].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
                 </div>
-              );
-            })
-          )}
-        </div>
-      )}
-    </div>
+                <div>
+                  <label className="label-caps" style={{ marginBottom: '1rem', display: 'block' }}>Sentiment Resonance</label>
+                  <select className="filter-select" style={{ width: '100%', height: '52px', borderRadius: '1.25rem' }} value={filters.sentiment} onChange={e => setFilters(f => ({ ...f, sentiment: e.target.value }))}>
+                    <option value="">All Frequencies</option>
+                    {['Positive', 'Negative', 'Neutral'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label-caps" style={{ marginBottom: '1rem', display: 'block' }}>Threshold Rating</label>
+                  <select className="filter-select" style={{ width: '100%', height: '52px', borderRadius: '1.25rem' }} value={filters.rating} onChange={e => setFilters(f => ({ ...f, rating: e.target.value }))}>
+                    <option value="">Any Magnitude</option>
+                    {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{r} Stars</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Search Content */}
+      <div style={{ minHeight: '400px' }}>
+        {!searched ? (
+          <motion.div variants={itemVariants}>
+            <div style={{ marginBottom: '2.5rem' }}>
+              <p className="label-caps" style={{ opacity: 0.5, marginBottom: '1.5rem', letterSpacing: '2px' }}>SUGGESTED VECTORS</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {SUGGESTIONS.map(s => (
+                  <motion.button
+                    key={s}
+                    whileHover={{ scale: 1.05, background: 'rgba(167, 139, 250, 0.1)' }}
+                    className="tone-pill"
+                    onClick={() => handleSuggestion(s)}
+                    style={{ fontSize: '0.85rem', padding: '0.6rem 1.25rem', borderRadius: '1rem' }}
+                  >
+                    {s}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ textAlign: 'center', padding: '8rem 2rem', background: 'rgba(0,0,0,0.1)', border: '1px dashed rgba(167, 139, 250, 0.1)', borderRadius: '3rem' }}>
+              <Cpu size={64} style={{ color: 'var(--primary)', opacity: 0.15, marginBottom: '2rem' }} className="animate-pulse" />
+              <h3 style={{ fontSize: '1.75rem', fontWeight: 950, letterSpacing: '-1px', color: 'var(--text-sub)' }}>Awakening Neural Clusters</h3>
+              <p style={{ color: 'var(--text-dim)', maxWidth: '420px', margin: '1rem auto 0', lineHeight: 1.8 }}>Enter a query above to initiate semantic analysis across your historical review data.</p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div variants={itemVariants}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                  Retrieved <span style={{ color: '#fff', fontWeight: 800 }}>{results.length}</span> neural matches for <span style={{ color: 'var(--primary-light)', fontWeight: 800 }}>"{query}"</span>
+                </p>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                   <span className="glass-pill" style={{ opacity: 0.6, fontSize: '0.7rem' }}>RANKED BY RELEVANCE</span>
+                </div>
+             </div>
+
+             {results.length === 0 ? (
+               <div className="glass-card" style={{ textAlign: 'center', padding: '5rem', borderRadius: '2.5rem' }}>
+                 <Activity size={48} style={{ opacity: 0.1, margin: '0 auto 2rem' }} />
+                 <p style={{ fontWeight: 800, color: 'var(--text-muted)' }}>ZERO MATCHES DETECTED IN THE CURRENT CLUSTER.</p>
+               </div>
+             ) : (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                 <AnimatePresence mode="popLayout">
+                   {results.map((r, i) => {
+                     const bColor = BUSINESS_COLORS[r.business_type] || BUSINESS_COLORS.default;
+                     return (
+                       <motion.div
+                         key={r.id || i}
+                         initial={{ opacity: 0, x: -20 }}
+                         animate={{ opacity: 1, x: 0 }}
+                         transition={{ delay: i * 0.05 }}
+                         className="glass-card"
+                         style={{ 
+                            padding: '2rem', 
+                            borderLeft: `4px solid ${bColor}80`, 
+                            background: 'rgba(17, 17, 34, 0.5)',
+                            borderRadius: '1.75rem',
+                            position: 'relative',
+                            overflow: 'hidden'
+                         }}
+                       >
+                         {/* Relevance Background Glow */}
+                         <div style={{ 
+                           position: 'absolute', top: 0, right: 0, width: '150px', height: '100%', 
+                           background: `linear-gradient(90deg, transparent, ${bColor}05)`, pointerEvents: 'none' 
+                         }} />
+
+                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                             <div style={{ width: '40px', height: '40px', background: `${bColor}20`, color: bColor, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                               {r.author?.[0]?.toUpperCase() || 'A'}
+                             </div>
+                             <div>
+                               <h4 style={{ fontWeight: 900, color: '#fff', fontSize: '1rem' }}>{r.author}</h4>
+                               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                 <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.5rem', background: 'rgba(255,255,255,0.03)', color: 'var(--text-dim)' }}>{r.business_type?.toUpperCase()}</span>
+                                 <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.5rem', background: 'rgba(255,255,255,0.03)', color: 'var(--text-dim)' }}>{r.sentiment?.toUpperCase()}</span>
+                               </div>
+                             </div>
+                           </div>
+                           <div style={{ textAlign: 'right' }}>
+                             <div style={{ fontSize: '0.6rem', color: 'var(--text-dim)', fontWeight: 800, letterSpacing: '1px', marginBottom: '0.25rem' }}>RELEVANCE</div>
+                             <div style={{ fontWeight: 950, color: 'var(--primary-light)', fontSize: '1.25rem' }}>{Math.round((r.relevance_score || 0.8) * 100)}%</div>
+                           </div>
+                         </div>
+
+                         <div style={{ display: 'flex', gap: '3px', marginBottom: '1rem' }}>
+                           {[...Array(5)].map((_, j) => (
+                             <Star key={j} size={14} fill={j < r.rating ? bColor : 'rgba(255,255,255,0.05)'} stroke="none" />
+                           ))}
+                         </div>
+
+                         <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                           "{r.content}"
+                         </p>
+
+                         {r.ai_summary && (
+                           <motion.div 
+                             initial={{ opacity: 0, y: 5 }} 
+                             animate={{ opacity: 1, y: 0 }}
+                             style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1.25rem', background: 'rgba(167, 139, 250, 0.05)', borderRadius: '1.25rem', border: '1px solid rgba(167, 139, 250, 0.1)' }}
+                           >
+                             <Zap size={16} color="var(--primary-light)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                             <p style={{ fontSize: '0.85rem', color: 'var(--primary-light)', lineHeight: 1.5, fontWeight: 500 }}>{r.ai_summary}</p>
+                           </motion.div>
+                         )}
+                       </motion.div>
+                     );
+                   })}
+                 </AnimatePresence>
+               </div>
+             )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Footer Disclaimer */}
+      <motion.div variants={itemVariants} style={{ marginTop: '5rem', textAlign: 'center', opacity: 0.3 }}>
+         <p style={{ fontSize: '0.7rem', letterSpacing: '1px', fontWeight: 800 }}>AURA SEARCH SYSTEM v4.2 // SEMANTIC INDEX ACTIVE</p>
+      </motion.div>
+    </motion.div>
   );
 };
 

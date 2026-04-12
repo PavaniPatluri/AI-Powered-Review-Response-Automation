@@ -171,7 +171,3 @@ const RealtimeView = ({ reviews = [] }) => {
 };
 
 export default RealtimeView;
-  );
-};
-
-export default RealtimeView;

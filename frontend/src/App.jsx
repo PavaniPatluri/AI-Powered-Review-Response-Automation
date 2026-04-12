@@ -177,7 +177,7 @@ const App = () => {
           className="app-layout"
         >
           {/* Animated 3D Neural Background */}
-          <NeuralBackground />
+          <NeuralBackground score={reviews.length ? (reviews.reduce((a, b) => a + (b.rating || 0), 0) / reviews.length) * 20 : 80} />
           
           <Sidebar 
             activeTab={activeTab} 

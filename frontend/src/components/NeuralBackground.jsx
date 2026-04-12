@@ -56,11 +56,14 @@ const NeuralParticles = ({ count = 4000, radius = 10, color = "#6366f1" }) => {
   );
 };
 
-const NeuralBackground = () => {
+const NeuralBackground = ({ score = 80 }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  // Map score to cinematic palette
+  const aurora = score > 70 ? "#a78bfa" : score > 40 ? "#6366f1" : "#f59e0b";
+  const glow = score > 70 ? "#22d3ee" : score > 40 ? "#818cf8" : "#f87171";
+
   const handleMouseMove = (e) => {
-    // Subtle mouse tracking for the entire canvas
     setMousePos({
       x: (e.clientX / window.innerWidth) * 2 - 1,
       y: -(e.clientY / window.innerHeight) * 2 + 1,
@@ -72,23 +75,22 @@ const NeuralBackground = () => {
       style={{ 
         position: 'fixed', 
         inset: 0, 
-        zIndex: 0, /* ensure it acts as a background */
-        pointerEvents: 'none', /* Let clicks pass through to UI */
-        opacity: 0.6 /* Subtle cinema feel */
+        zIndex: 0,
+        pointerEvents: 'none',
+        opacity: 0.6
       }}
     >
       <Canvas 
         camera={{ position: [0, 0, 8], fov: 60 }}
-        style={{ pointerEvents: 'auto' }} // Re-enable pointer events for Canvas if we need raycasting later
+        style={{ pointerEvents: 'auto' }}
         onMouseMove={handleMouseMove}
       >
         <ambientLight intensity={0.5} />
-        {/* Abstract Particle Layers */}
-        <NeuralParticles count={3000} radius={6} color="#a78bfa" />
-        <NeuralParticles count={1500} radius={8} color="#8b5cf6" />
+        {/* Intelligence Reactive Particle Layers */}
+        <NeuralParticles count={3000} radius={6} color={aurora} />
+        <NeuralParticles count={1500} radius={8} color={glow} />
         <NeuralParticles count={1000} radius={12} color="#0b0b1a" />
         
-        {/* Subtle camera movement tied to mouse */}
         <CameraRig mouse={mousePos} />
       </Canvas>
     </div>
