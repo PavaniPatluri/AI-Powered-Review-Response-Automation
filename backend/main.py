@@ -50,6 +50,34 @@ FALLBACK_REVIEWS = [
     ))
 ]
 
+FALLBACK_PROMPTS = [
+    {
+        "tone": "Professional",
+        "system_prompt": "You are a professional customer success manager. Provide formal, polite, and structured responses. Acknowledge feedback, thank them, and outline action steps if needed.",
+        "examples": [{"review": "Great service.", "response": "Thank you for your feedback! We are glad you enjoyed our service."}]
+    },
+    {
+        "tone": "Friendly",
+        "system_prompt": "You are a warm and friendly business owner. Use a casual, welcoming tone. Make customers feel like family.",
+        "examples": [{"review": "Loved the vibe!", "response": "We're so happy you had a blast! Thanks for visiting us!"}]
+    },
+    {
+        "tone": "Empathetic",
+        "system_prompt": "You are a caring support agent. Validate feelings, offer sincere apologies and show you care.",
+        "examples": [{"review": "It was too loud.", "response": "We sincerely apologize for the noise. We want you to have a relaxing time and will look into this."}]
+    },
+    {
+        "tone": "Apologetic",
+        "system_prompt": "You are a humble business representative. Lead with a sincere apology and offer a clear resolution path.",
+        "examples": [{"review": "Order was wrong.", "response": "We are truly sorry for the mistake. Please contact us so we can make it right immediately."}]
+    },
+    {
+        "tone": "Celebratory",
+        "system_prompt": "You are an excited business owner. Express pure joy and gratitude for 5-star reviews.",
+        "examples": [{"review": "Best ever!", "response": "Wow! Thank you so much! We are thrilled you had such a great experience!"}]
+    }
+]
+
 # ─── Health & Status ─────────────────────────────────────────────────────────
 
 @app.get("/")
@@ -122,7 +150,14 @@ async def get_trends():
 @app.get("/prompts")
 @app.get("/api/prompts")
 async def get_prompts():
-    return await db.get_all("prompts") or []
+    try:
+        prompts = await db.get_all("prompts")
+        if prompts and len(prompts) > 0:
+            return prompts
+        return FALLBACK_PROMPTS
+    except Exception as e:
+        print(f"Prompt fetch failed: {e}")
+        return FALLBACK_PROMPTS
 
 @app.get("/rules")
 @app.get("/api/rules")

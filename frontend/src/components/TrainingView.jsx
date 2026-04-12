@@ -10,8 +10,17 @@ const TONE_META = {
   Celebratory:  { color: '#10b981', desc: 'Enthusiastic and joyful — perfect for 5-star reviews.' },
 };
 
+const DEFAULT_PROMPTS = [
+  { tone: 'Professional', system_prompt: 'Provide formal, polite, and structured responses.', examples: [] },
+  { tone: 'Friendly',     system_prompt: 'Use a casual, welcoming tone. Make customers feel like family.', examples: [] },
+  { tone: 'Empathetic',   system_prompt: 'Validate feelings and offer sincere apologies.', examples: [] },
+  { tone: 'Apologetic',   system_prompt: 'Lead with a sincere apology and offer clear resolution.', examples: [] },
+  { tone: 'Celebratory',  system_prompt: 'Express pure joy and gratitude for great reviews!', examples: [] }
+];
+
 const TrainingView = ({ prompts, onSave }) => {
-  const [editablePrompts, setEditablePrompts] = useState(prompts);
+  const initialPrompts = prompts && prompts.length > 0 ? prompts : DEFAULT_PROMPTS;
+  const [editablePrompts, setEditablePrompts] = useState(initialPrompts);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
