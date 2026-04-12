@@ -78,6 +78,25 @@ FALLBACK_PROMPTS = [
     }
 ]
 
+FALLBACK_RULES = [
+    {
+        "id": 1,
+        "name": "5-Star Excellence",
+        "enabled": True,
+        "rating_min": 5,
+        "sentiment_match": ["Positive"],
+        "tone": "Celebratory"
+    },
+    {
+        "id": 2,
+        "name": "Negative Recovery",
+        "enabled": True,
+        "rating_min": 1,
+        "sentiment_match": ["Negative"],
+        "tone": "Apologetic"
+    }
+]
+
 # ─── Health & Status ─────────────────────────────────────────────────────────
 
 @app.get("/")
@@ -162,7 +181,14 @@ async def get_prompts():
 @app.get("/rules")
 @app.get("/api/rules")
 async def get_rules():
-    return await db.get_all("automation_rules") or []
+    try:
+        rules = await db.get_all("rules")
+        if rules and len(rules) > 0:
+            return rules
+        return FALLBACK_RULES
+    except Exception as e:
+        print(f"Rules fetch failed: {e}")
+        return FALLBACK_RULES
 
 @app.get("/profile")
 @app.get("/api/profile")

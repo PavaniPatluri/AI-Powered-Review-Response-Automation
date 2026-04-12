@@ -5,7 +5,11 @@ import { fetchProfiles, updateProfiles, fetchRules, updateRules, fetchSystemConf
 const TONES = ['Professional', 'Friendly', 'Empathetic', 'Apologetic', 'Celebratory'];
 const BUSINESS_TYPES = ['Restaurant', 'Hotel', 'Clinic', 'Salon', 'Theater'];
 const SENTIMENTS = ['Positive', 'Negative', 'Neutral'];
-const CATEGORIES = ['Service', 'Food', 'Wait Time', 'Hygiene', 'Price', 'Atmosphere', 'Quality', 'Booking'];
+
+const DEFAULT_RULES = [
+  { id: '1', name: '5-Star Excellence', enabled: true, rating_min: 5, tone: 'Celebratory', sentiment_match: ['Positive'] },
+  { id: '2', name: 'Negative Recovery', enabled: true, rating_min: 1, tone: 'Apologetic', sentiment_match: ['Negative'] }
+];
 
 const SettingsView = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('profiles');
@@ -20,7 +24,7 @@ const SettingsView = ({ addToast }) => {
       try {
         const [ps, rs, sc] = await Promise.all([fetchProfiles(), fetchRules(), fetchSystemConfig().catch(() => ({ gemini_api_key: '' }))]);
         setProfiles(ps);
-        setRules(rs);
+        setRules(rs && rs.length > 0 ? rs : DEFAULT_RULES);
         if (sc) setSystemConfig(sc);
       } catch (e) {
         console.error(e);
