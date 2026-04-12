@@ -22,7 +22,7 @@ const BUSINESS_ICONS = {
   Restaurant: '🍽️', Hotel: '🏨', Clinic: '🏥', Salon: '💇', Theater: '🎭'
 };
 
-const Sidebar = ({ activeTab, onTabChange, onFilterSelect, pendingCount }) => (
+const Sidebar = ({ activeTab, onTabChange, onFilterSelect, pendingCount, onLogout }) => (
   <aside className="sidebar" style={{ background: 'rgba(11, 11, 26, 0.75)', backdropFilter: 'blur(40px)' }}>
     <div className="sidebar-logo" style={{ borderBottom: '1px solid rgba(167, 139, 250, 0.1)', paddingBottom: '2.5rem' }}>
       <motion.div 
@@ -43,7 +43,7 @@ const Sidebar = ({ activeTab, onTabChange, onFilterSelect, pendingCount }) => (
       </div>
     </div>
 
-    <nav className="nav-menu" style={{ gap: '0.75rem' }}>
+    <nav className="nav-menu" style={{ gap: '0.75rem', flex: 1 }}>
       {NAV.map((item, i) => {
         if (item.section) {
           return (
@@ -104,7 +104,7 @@ const Sidebar = ({ activeTab, onTabChange, onFilterSelect, pendingCount }) => (
       })}
     </nav>
 
-    <div className="sidebar-footer">
+    <div className="sidebar-footer" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <motion.div 
         whileHover={{ scale: 1.02 }}
         style={{ 
@@ -138,6 +138,21 @@ const Sidebar = ({ activeTab, onTabChange, onFilterSelect, pendingCount }) => (
           ))}
         </div>
       </motion.div>
+
+      <motion.button
+        whileHover={{ x: 5, background: 'rgba(239, 68, 68, 0.05)' }}
+        onClick={onLogout}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '1rem',
+          padding: '1.25rem', borderRadius: '1.5rem',
+          background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.1)',
+          color: '#f87171', fontWeight: 800, fontSize: '0.85rem', width: '100%',
+          cursor: 'pointer', transition: 'all 0.4s ease'
+        }}
+      >
+        <Shield size={16} />
+        TERMINATE SESSION
+      </motion.button>
     </div>
   </aside>
 );

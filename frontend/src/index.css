@@ -1068,3 +1068,127 @@ select.filter-select option { background: #161b22; color: white; }
 .status-pending { background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber); }
 .status-disconnected { background: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
 
+
+/* --- Login Aesthetics -------------------------------------------------------- */
+.login-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.glass-login-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 3.5rem;
+  background: rgba(17, 17, 34, 0.4);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2.5rem;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8), 
+              0 0 0 1px rgba(167, 139, 250, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(167, 139, 250, 0.05),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.glass-login-card:hover::before {
+  left: 100%;
+}
+
+.login-input-group {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.login-input-aura {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: 1.25rem;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.login-input-aura:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 25px rgba(167, 139, 250, 0.15);
+  background: rgba(167, 139, 250, 0.03);
+}
+
+.btn-neural {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+  color: white;
+  border: none;
+  border-radius: 1.25rem;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 35px -5px rgba(167, 139, 250, 0.3);
+}
+
+.btn-neural:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 45px -5px rgba(167, 139, 250, 0.4);
+}
+
+.btn-neural:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-neural::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity: 0;
+  transition: 0.3s;
+  pointer-events: none;
+}
+
+.btn-neural:hover::after {
+  opacity: 1;
+}
+
+.demo-access {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.demo-access:hover {
+  color: var(--primary-light);
+  transform: scale(1.02);
+}

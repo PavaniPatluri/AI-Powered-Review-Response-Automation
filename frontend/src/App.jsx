@@ -13,6 +13,7 @@ import NeuralBackground from './components/NeuralBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchReviews, fetchPrompts, updatePrompts, fetchRules, EXPORT_REVIEWS_URL, WS_URL } from './api';
 import { useRef } from 'react';
+import LoginView from './components/LoginView';
 
 // ─── Toast System ─────────────────────────────────────────────────────────────
 const Toast = ({ toasts, removeToast }) => (
@@ -36,6 +37,8 @@ const Toast = ({ toasts, removeToast }) => (
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [globalBusinessFilter, setGlobalBusinessFilter] = useState('All');
   const [reviews, setReviews] = useState([]);
@@ -57,12 +60,37 @@ const App = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  // ─── Authentication Persistence ───
+  useEffect(() => {
+    const token = localStorage.getItem('neural_nexus_token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+    setIsAuthLoading(false);
+  }, []);
+
+  const handleLogin = (token) => {
+    const finalToken = token || 'session_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('neural_nexus_token', finalToken);
+    setIsAuthenticated(true);
+    addToast('Neural Handshake Established. Welcome, Agent.', 'success');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('neural_nexus_token');
+    setIsAuthenticated(false);
+    setShowSplash(true); // Reset for next login
+    addToast('Connection Terminated.', 'info');
+  };
+
   const handleRealtimeReview = useCallback((review) => {
     setReviews(prev => [review, ...prev]);
     addToast(`New Review: ${review.author} (${review.sentiment})`, 'info');
   }, [addToast]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const connectSync = () => {
       try {
         socketRef.current = new WebSocket(WS_URL);
@@ -94,7 +122,7 @@ const App = () => {
     return () => {
       if (socketRef.current) socketRef.current.close();
     };
-  }, [handleRealtimeReview]);
+  }, [handleRealtimeReview, isAuthenticated]);
 
   const handleFilterSelect = (type) => {
     setGlobalBusinessFilter(type);
@@ -102,6 +130,8 @@ const App = () => {
   };
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const load = async () => {
       try {
         const [rv, pr, rl] = await Promise.all([fetchReviews(), fetchPrompts(), fetchRules()]);
@@ -109,7 +139,6 @@ const App = () => {
         setPrompts(pr);
         setRules(rl);
         setError(null);
-        addToast(`Loaded ${rv.length} reviews`, 'success');
       } catch (e) {
         setError(e.message);
         addToast('Could not connect to backend. Using offline mode.', 'error');
@@ -118,7 +147,7 @@ const App = () => {
       }
     };
     load();
-  }, [addToast]);
+  }, [addToast, isAuthenticated]);
 
   const handleSavePrompts = async (newPrompts) => {
     try {
@@ -135,38 +164,19 @@ const App = () => {
     addToast('Downloading CSV report...', 'info');
   };
 
-
-
   const pendingCount = reviews.filter(r => r.status === 'Pending').length;
 
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', height: '100vh', gap: '1.5rem'
-      }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: 18,
-          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
-          animation: 'bgPulse 2s ease-in-out infinite'
-        }}>
-          <Loader size={28} color="white" className="animate-spin" />
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '1.25rem', marginBottom: '0.375rem' }}>
-            Review Catalyst
-          </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Connecting to backend...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isAuthLoading) return null; // Simple guard while checking localStorage
 
   return (
     <AnimatePresence mode="wait">
-      {showSplash ? (
+      {!isAuthenticated ? (
+        <React.Fragment key="login-flow">
+          <NeuralBackground score={80} />
+          <LoginView onLogin={handleLogin} />
+          <Toast toasts={toasts} removeToast={removeToast} />
+        </React.Fragment>
+      ) : showSplash ? (
         <SplashScreen key="splash" onFinish={() => setShowSplash(false)} />
       ) : (
         <motion.div 
@@ -183,7 +193,8 @@ const App = () => {
             activeTab={activeTab} 
             onTabChange={(tab) => { setActiveTab(tab); setGlobalBusinessFilter('All'); }} 
             onFilterSelect={handleFilterSelect}
-            pendingCount={pendingCount} 
+            pendingCount={pendingCount}
+            onLogout={handleLogout}
           />
 
           <main className="main-content">

@@ -14,6 +14,28 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Authentication
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS webauthn_credentials (
+  id TEXT PRIMARY KEY, -- credential_id (base64)
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  public_key TEXT NOT NULL, -- public_key (base64)
+  sign_count INTEGER DEFAULT 0,
+  transports JSONB DEFAULT '[]',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed a default admin user for initial biometric linking
+INSERT INTO users (id, email, display_name) 
+VALUES ('00000000-0000-4000-a000-000000000000', 'admin@neuralnexus.ai', 'Nexus Admin')
+ON CONFLICT (email) DO NOTHING;
+
 -- 2. AI Prompts
 CREATE TABLE IF NOT EXISTS prompts (
   id SERIAL PRIMARY KEY,

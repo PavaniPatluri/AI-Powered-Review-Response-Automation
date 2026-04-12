@@ -96,3 +96,26 @@ class RealtimeReview(BaseModel):
 
 class SystemConfig(BaseModel):
     gemini_api_key: Optional[str] = ""
+
+class AuthOptionsRequest(BaseModel):
+    email: str
+
+class AuthOptionsResponse(BaseModel):
+    options: Dict[str, Any]
+    session_id: str
+
+class RegistrationVerification(BaseModel):
+    email: str
+    registration_response: Dict[str, Any]
+    session_id: str
+
+class AuthenticationVerification(BaseModel):
+    email: str
+    auth_response: Dict[str, Any]
+    session_id: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: Optional[str] = None
+    user: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None

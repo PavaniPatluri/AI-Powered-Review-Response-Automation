@@ -12,12 +12,14 @@ from typing import List
 # ─── Robust Imports ──────────────────────────────────────────────────────────
 try:
     from backend import schemas
-    from backend.services import ai_service
+    from backend.services import ai_service, auth_service
     from backend.database import db, settings
 except ImportError:
     import schemas
-    from services import ai_service
+    from services import ai_service, auth_service
     from database import db, settings
+
+auth_engine = auth_service.AuthService(db)
 
 app = FastAPI(title="Review Catalyst AI Engine", version="2.0")
 
@@ -266,6 +268,40 @@ async def update_prompts(prompts: List[dict]):
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ─── Authentication ──────────────────────────────────────────────────────────
+
+@app.post("/api/auth/register/options", response_model=schemas.AuthOptionsResponse)
+async def get_registration_options(request: schemas.AuthOptionsRequest):
+    try:
+        options, session_id = await auth_engine.get_registration_options(request.email)
+        return {"options": json.loads(options), "session_id": session_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/auth/register/verify")
+async def verify_registration(data: schemas.RegistrationVerification):
+    try:
+        success = await auth_engine.verify_registration(data.email, data.registration_response, data.session_id)
+        return {"success": success}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/auth/login/options", response_model=schemas.AuthOptionsResponse)
+async def get_login_options(request: schemas.AuthOptionsRequest):
+    try:
+        options, session_id = await auth_engine.get_login_options(request.email)
+        return {"options": json.loads(options), "session_id": session_id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/auth/login/verify", response_model=schemas.LoginResponse)
+async def verify_login(data: schemas.AuthenticationVerification):
+    try:
+        token, user = await auth_engine.verify_login(data.email, data.auth_response, data.session_id)
+        return {"success": True, "token": token, "user": user}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 # ─── Real-time ───────────────────────────────────────────────────────────────
 

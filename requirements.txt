@@ -5,3 +5,5 @@ python-dotenv
 websockets
 httpx
 pydantic-settings
+webauthn
+pyjwt
