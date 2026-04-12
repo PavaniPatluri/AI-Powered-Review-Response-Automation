@@ -42,7 +42,7 @@ FALLBACK_REVIEWS = [
         "business_type": btype,
         "platform": "Google",
         "source": "Simulation",
-        "status": "Pending"
+        "status": "Published" if i < 2 else "Pending"
     }
     for i, (name, btype) in enumerate(zip(
         ["James Miller", "Sarah Chen", "Elena Rodriguez", "David Kim", "Marcus Thorne", "Tanya Gupta"],
