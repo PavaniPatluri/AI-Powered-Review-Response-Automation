@@ -59,7 +59,7 @@ const DashboardView = ({ reviews, onExport }) => {
   const ratingDist = [1, 2, 3, 4, 5].map(r => ({
     name: `${r} Star`,
     count: reviews.filter(x => x.rating === r).length,
-    color: r > 3 ? '#34d399' : (r === 3 ? '#60a5fa' : '#f87171')
+    color: r === 5 ? 'var(--accent-green)' : (r === 4 ? 'var(--primary)' : (r === 3 ? 'var(--accent-cyan)' : (r === 2 ? 'var(--accent-amber)' : 'var(--accent-red)')))
   }));
 
   // Timeline Data
@@ -181,9 +181,9 @@ const DashboardView = ({ reviews, onExport }) => {
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" stroke="var(--text-muted)" fontSize={11} axisLine={false} tickLine={false} width={70} />
                 <RechartsTooltip cursor={{fill: 'rgba(167, 139, 250, 0.03)'}} content={<CustomTooltip />} />
-                <Bar dataKey="count" radius={[0, 12, 12, 0]} barSize={26}>
+                <Bar dataKey="count" radius={[0, 12, 12, 0]} barSize={26} background={{ fill: 'rgba(255, 255, 255, 0.03)', radius: [0, 12, 12, 0] }}>
                   {ratingDist.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index > 2 ? 'var(--primary)' : 'rgba(167, 139, 250, 0.2)'} />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
