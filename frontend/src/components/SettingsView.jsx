@@ -5,6 +5,7 @@ import { fetchProfiles, updateProfiles, fetchRules, updateRules, fetchSystemConf
 const TONES = ['Professional', 'Friendly', 'Empathetic', 'Apologetic', 'Celebratory'];
 const BUSINESS_TYPES = ['Restaurant', 'Hotel', 'Clinic', 'Salon', 'Theater'];
 const SENTIMENTS = ['Positive', 'Negative', 'Neutral'];
+const CATEGORIES = ['Service', 'Food', 'Wait Time', 'Hygiene', 'Price', 'Atmosphere', 'Quality', 'Booking'];
 
 const DEFAULT_RULES = [
   { id: '1', name: '5-Star Excellence', enabled: true, rating_min: 5, tone: 'Celebratory', sentiment_match: ['Positive'] },
