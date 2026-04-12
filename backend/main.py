@@ -240,6 +240,33 @@ async def update_system_config(config: dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/profiles")
+@app.post("/api/profiles")
+async def update_profiles(profiles: List[dict]):
+    try:
+        res = await db.upsert("profiles", profiles)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/rules")
+@app.post("/api/rules")
+async def update_rules(rules: List[dict]):
+    try:
+        res = await db.upsert("rules", rules)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/prompts")
+@app.post("/api/prompts")
+async def update_prompts(prompts: List[dict]):
+    try:
+        res = await db.upsert("prompts", prompts)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ─── Real-time ───────────────────────────────────────────────────────────────
 
 @app.websocket("/ws/live-reviews")
