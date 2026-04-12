@@ -97,6 +97,19 @@ FALLBACK_RULES = [
     }
 ]
 
+FALLBACK_PROFILES = [
+    {
+        "id": "default",
+        "name": "The Royal Spice",
+        "type": "Restaurant",
+        "address": "123 Gourmet St, Foodville",
+        "contact": "+1 (555) 123-4567",
+        "specialties": ["Butter Chicken", "Peshawari Naan"],
+        "tone": "Professional",
+        "auto_respond": True
+    }
+]
+
 # ─── Health & Status ─────────────────────────────────────────────────────────
 
 @app.get("/")
@@ -193,7 +206,39 @@ async def get_rules():
 @app.get("/profile")
 @app.get("/api/profile")
 async def get_profile():
-    return {"name": "Catalyst Enterprise", "type": "Global Core"}
+    return FALLBACK_PROFILES[0]
+
+@app.get("/profiles")
+@app.get("/api/profiles")
+async def get_profiles():
+    try:
+        profiles = await db.get_all("profiles")
+        if profiles and len(profiles) > 0:
+            return profiles
+        return FALLBACK_PROFILES
+    except Exception as e:
+        print(f"Profiles fetch failed: {e}")
+        return FALLBACK_PROFILES
+
+@app.get("/config/system")
+@app.get("/api/config/system")
+async def get_system_config():
+    try:
+        config = await db.get_by_id("config", "main")
+        if config:
+            return config
+        return {"gemini_api_key": os.getenv("GEMINI_API_KEY", "")}
+    except:
+        return {"gemini_api_key": os.getenv("GEMINI_API_KEY", "")}
+
+@app.post("/config/system")
+@app.post("/api/config/system")
+async def update_system_config(config: dict):
+    try:
+        res = await db.upsert("config", [{"id": "main", **config}])
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ─── Real-time ───────────────────────────────────────────────────────────────
 

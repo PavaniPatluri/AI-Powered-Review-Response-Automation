@@ -11,6 +11,10 @@ const DEFAULT_RULES = [
   { id: '2', name: 'Negative Recovery', enabled: true, rating_min: 1, tone: 'Apologetic', sentiment_match: ['Negative'] }
 ];
 
+const DEFAULT_PROFILES = [
+  { id: 'default', name: 'The Royal Spice', type: 'Restaurant', address: '123 Gourmet St, Foodville', specialties: ['Butter Chicken', 'Peshawari Naan'], tone: 'Professional' }
+];
+
 const SettingsView = ({ addToast }) => {
   const [activeTab, setActiveTab] = useState('profiles');
   const [profiles, setProfiles] = useState([]);
@@ -23,7 +27,7 @@ const SettingsView = ({ addToast }) => {
     const loadData = async () => {
       try {
         const [ps, rs, sc] = await Promise.all([fetchProfiles(), fetchRules(), fetchSystemConfig().catch(() => ({ gemini_api_key: '' }))]);
-        setProfiles(ps);
+        setProfiles(ps && ps.length > 0 ? ps : DEFAULT_PROFILES);
         setRules(rs && rs.length > 0 ? rs : DEFAULT_RULES);
         if (sc) setSystemConfig(sc);
       } catch (e) {
