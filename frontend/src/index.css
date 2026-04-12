@@ -61,6 +61,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+input, textarea, select, button {
+  color: inherit;
+  font-family: inherit;
+}
+
 /* ─── Holographic Background ────────────────────────────────────────────────── */
 body::before {
   content: '';
