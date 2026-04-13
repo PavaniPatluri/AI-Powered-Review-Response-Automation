@@ -6,6 +6,11 @@ class ReviewInput(BaseModel):
     tone: Optional[str] = "Professional"
     business_type: Optional[str] = "Restaurant"
 
+class ReviewAnalysisRequest(BaseModel):
+    content: str
+    tone: Optional[str] = "Professional"
+    business_type: Optional[str] = "Restaurant"
+
 class SuggestedResponse(BaseModel):
     tone: str
     content: str
