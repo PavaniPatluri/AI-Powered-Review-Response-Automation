@@ -7,6 +7,7 @@ import io
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from typing import List
 
 # ─── Robust Imports ──────────────────────────────────────────────────────────
@@ -323,6 +324,17 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         pass
+
+# ─── Serve Frontend ──────────────────────────────────────────────────────────
+
+# Mount the built frontend static files
+# Use ge_cwd() to ensure it works in Docker/Railway
+frontend_path = os.path.join(os.getcwd(), "frontend", "dist")
+
+if os.path.exists(frontend_path):
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+else:
+    print(f"Warning: Frontend dist not found at {frontend_path}. Static file serving disabled.")
 
 @app.on_event("startup")
 async def startup_event():

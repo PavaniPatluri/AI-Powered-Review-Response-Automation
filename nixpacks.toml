@@ -1,0 +1,26 @@
+[providers]
+# Ensure both Node.js (for frontend build) and Python (for backend runtime) are installed
+"node" = {}
+"python" = {}
+
+[phases.setup]
+# Use recent versions for stability and performance
+nixPkgs = ["python311", "nodejs_20"]
+
+[phases.install]
+# Install both backend and frontend dependencies
+cmds = [
+  "python -m venv /app/.venv",
+  "source /app/.venv/bin/activate && pip install -r backend/requirements.txt",
+  "npm install"
+]
+
+[phases.build]
+# Build the frontend monorepo workspace
+cmds = [
+  "npm run build --workspace=frontend"
+]
+
+[start]
+# Start the FastAPI server using the virtual environment
+cmd = "source /app/.venv/bin/activate && uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
