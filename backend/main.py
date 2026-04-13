@@ -324,6 +324,13 @@ async def verify_login(data: schemas.AuthenticationVerification):
 @app.websocket("/ws/live-reviews")
 @app.websocket("/api/ws/live-reviews")
 async def websocket_endpoint(websocket: WebSocket):
+    # Vercel Serverless doesn't support WebSockets
+    if os.getenv("VERCEL"):
+        await websocket.accept()
+        await websocket.send_text("Real-time sync currently unavailable on Serverless (Vercel). Use Railway for live updates.")
+        await websocket.close()
+        return
+
     await websocket.accept()
     try:
         while True:
