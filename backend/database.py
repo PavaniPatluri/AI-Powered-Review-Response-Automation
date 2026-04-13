@@ -26,17 +26,18 @@ class DatabaseBridge:
         if not self.url or not settings.supabase_key:
             return None
             
+        # Use very short timeout on Vercel to trigger fallbacks quickly
+        timeout = 1.0 if os.getenv("VERCEL") else 10.0
         full_url = f"{self.url}/rest/v1/{table}{query}"
         async with httpx.AsyncClient() as client:
             try:
-                if method == "GET":
-                    resp = await client.get(full_url, headers=self.headers)
-                elif method == "POST":
-                    resp = await client.post(full_url, headers=self.headers, json=data)
-                elif method == "PATCH":
-                    resp = await client.patch(full_url, headers=self.headers, json=data)
-                elif method == "DELETE":
-                    resp = await client.delete(full_url, headers=self.headers)
+                resp = await client.request(
+                    method=method,
+                    url=full_url,
+                    headers=self.headers,
+                    json=data,
+                    timeout=timeout
+                )
                 
                 resp.raise_for_status()
                 return resp.json()
