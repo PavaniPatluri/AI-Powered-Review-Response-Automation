@@ -98,7 +98,9 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
         rotateX, 
         rotateY, 
         transformStyle: "preserve-3d",
-        perspective: "1200px" 
+        perspective: "1200px",
+        background: 'rgba(22, 22, 42, 0.4)',
+        borderRadius: '2rem'
       }}
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
@@ -108,7 +110,6 @@ const ReviewCard = ({ review, index, bulkTrigger, rules }) => {
         ease: [0.16, 1, 0.3, 1]
       }}
       className="review-card-3d"
-      style={{ background: 'rgba(22, 22, 42, 0.4)', borderRadius: '2rem' }}
     >
       {/* 3D Inner Content */}
       <div style={{ transform: "translateZ(40px)", padding: '2rem' }}>

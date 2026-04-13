@@ -11,7 +11,6 @@ from webauthn import (
     options_to_json,
 )
 from webauthn.helpers.structs import (
-    RegistrationSelectionCriteria,
     AuthenticatorSelectionCriteria,
     UserVerificationRequirement,
     AuthenticatorAttachment,
