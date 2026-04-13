@@ -134,13 +134,22 @@ const App = () => {
 
     const load = async () => {
       try {
-        const [rv, pr, rl] = await Promise.all([fetchReviews(), fetchPrompts(), fetchRules()]);
+        // Diagnostic health check
+        await fetch(`${BASE_URL}/health`).catch(() => console.error('Health check failed'));
+        
+        const [rv, pr, rl] = await Promise.all([
+          fetchReviews().catch(e => { console.error('fetchReviews failed:', e); throw e; }),
+          fetchPrompts().catch(e => { console.error('fetchPrompts failed:', e); throw e; }),
+          fetchRules().catch(e => { console.error('fetchRules failed:', e); throw e; })
+        ]);
+        
         setReviews(rv);
         setPrompts(pr);
         setRules(rl);
         setError(null);
       } catch (e) {
         setError(e.message);
+        console.error('Neural Core Connection Error:', e);
         addToast('Could not connect to backend. Using offline mode.', 'error');
       } finally {
         setLoading(false);
@@ -199,27 +208,6 @@ const App = () => {
 
           <main className="main-content">
             {/* Connection Error Banner */}
-            {error && (
-              <div style={{
-                display: 'flex', gap: '0.75rem', alignItems: 'center',
-                padding: '0.875rem 1.25rem', borderRadius: '0.875rem',
-                background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                marginBottom: '1.5rem', fontSize: '0.85rem'
-              }}>
-                <WifiOff size={16} style={{ color: '#f87171', flexShrink: 0 }} />
-                <span style={{ color: 'var(--text-sub)', flex: 1 }}>
-                  <strong style={{ color: '#f87171' }}>Intelligence Engine Offline:</strong> {
-                    import.meta.env.PROD 
-                    ? "Check your cloud environment variables and deployment status." 
-                    : "Start the FastAPI server at localhost:8000."
-                  }
-                </span>
-                <button className="btn btn-danger" style={{ fontSize: '0.75rem', padding: '0.4rem 0.875rem' }}
-                  onClick={() => window.location.reload()}>
-                  Retry
-                </button>
-              </div>
-            )}
 
             {/* Views with Page Transitions */}
             <AnimatePresence mode="wait">

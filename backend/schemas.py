@@ -25,12 +25,12 @@ class PromptTemplate(BaseModel):
     examples: Optional[List[PromptExample]] = []
 
 class Review(BaseModel):
-    id: str
-    author: str
-    rating: int
-    content: str
-    date: str
-    source: str
+    id: str = "unknown"
+    author: str = "Anonymous"
+    rating: int = 5
+    content: str = ""
+    date: str = "2026-04-12"
+    source: str = "System"
     sentiment: Optional[str] = "Neutral"
     status: Optional[str] = "Pending"
     business_type: Optional[str] = "Restaurant"
@@ -57,10 +57,10 @@ class SearchResult(BaseModel):
     ai_summary: Optional[str] = ""
 
 class AutomationRule(BaseModel):
-    id: str
-    name: str
-    rating_min: int
-    tone: str
+    id: str = "0"
+    name: str = "Generic Rule"
+    rating_min: int = 1
+    tone: str = "Professional"
     enabled: bool = True
     sentiment_match: Optional[List[str]] = []
     keyword_match: Optional[List[str]] = []
@@ -77,15 +77,15 @@ class BusinessProfile(BaseModel):
     auto_respond: Optional[bool] = False
 
 class RealtimeReview(BaseModel):
-    id: str
-    author: str
-    rating: int
-    content: str
-    date: str
-    source: str
-    sentiment: str
-    business_type: str
-    platform: str
+    id: str = "unknown"
+    author: str = "Anonymous"
+    rating: int = 5
+    content: str = ""
+    date: str = "2026-04-12"
+    source: str = "System"
+    sentiment: str = "Neutral"
+    business_type: str = "Restaurant"
+    platform: str = "Google"
     is_new: Optional[bool] = True
     drafted_response: Optional[str] = None
     ai_tone: Optional[str] = None

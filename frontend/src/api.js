@@ -1,6 +1,8 @@
 const isProd = import.meta.env.PROD;
 const BASE_URL = import.meta.env.VITE_API_URL || (isProd ? '/api' : 'http://localhost:8000');
-const WS_URL = import.meta.env.VITE_WS_URL || (isProd ? 'wss://robust-vibrancy-production.up.railway.app/api/ws/live-reviews' : 'ws://localhost:8000/ws/live-reviews');
+const WS_URL = import.meta.env.VITE_WS_URL || (isProd 
+  ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/ws/live-reviews` 
+  : 'ws://localhost:8000/ws/live-reviews');
 
 export const fetchReviews = async () => {
   const res = await fetch(`${BASE_URL}/reviews`);

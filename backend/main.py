@@ -4,6 +4,7 @@ import asyncio
 import random
 import json
 import io
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -83,7 +84,7 @@ FALLBACK_PROMPTS = [
 
 FALLBACK_RULES = [
     {
-        "id": 1,
+        "id": "1",
         "name": "5-Star Excellence",
         "enabled": True,
         "rating_min": 5,
@@ -91,7 +92,7 @@ FALLBACK_RULES = [
         "tone": "Celebratory"
     },
     {
-        "id": 2,
+        "id": "2",
         "name": "Negative Recovery",
         "enabled": True,
         "rating_min": 1,
@@ -134,6 +135,11 @@ async def status():
         "x_ray_keys": supabase_keys,
         "mode": "CLOUD" if settings.supabase_url else "LOCAL_FALLBACK"
     }
+
+@app.get("/health")
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "message": "Intelligence Engine is responsive"}
 
 # ─── Reviews ─────────────────────────────────────────────────────────────────
 
@@ -203,8 +209,8 @@ async def get_prompts():
         print(f"Prompt fetch failed: {e}")
         return FALLBACK_PROMPTS
 
-@app.get("/rules")
-@app.get("/api/rules")
+@app.get("/rules", response_model=List[schemas.AutomationRule])
+@app.get("/api/rules", response_model=List[schemas.AutomationRule])
 async def get_rules():
     try:
         rules = await db.get_all("rules")
@@ -324,6 +330,22 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         pass
+
+# ─── Export ──────────────────────────────────────────────────────────────────
+
+@app.get("/export")
+@app.get("/api/export")
+async def export_reviews():
+    try:
+        reviews = await get_reviews()
+        csv_content = ai_service.generate_csv_report(reviews)
+        return StreamingResponse(
+            io.StringIO(csv_content),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=reviews_report_{datetime.now().strftime('%Y%m%d')}.csv"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 # ─── Serve Frontend ──────────────────────────────────────────────────────────
 
