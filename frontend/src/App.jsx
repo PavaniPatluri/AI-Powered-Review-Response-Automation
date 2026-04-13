@@ -173,7 +173,7 @@ const App = () => {
       {!isAuthenticated ? (
         <React.Fragment key="login-flow">
           <NeuralBackground score={80} />
-          <LoginView onLogin={handleLogin} />
+          <LoginView onLogin={handleLogin} addToast={addToast} />
           <Toast toasts={toasts} removeToast={removeToast} />
         </React.Fragment>
       ) : showSplash ? (

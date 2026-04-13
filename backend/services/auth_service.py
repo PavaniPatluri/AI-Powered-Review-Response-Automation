@@ -22,7 +22,7 @@ from webauthn.helpers import bytes_to_base64url, base64url_to_bytes
 AUTH_SESSIONS = {}
 
 JWT_SECRET = os.getenv("JWT_SECRET", "neural-nexus-top-secret-key-2026")
-RP_ID = "localhost"  # Should match the web domain
+RP_ID = os.getenv("RP_ID", "localhost")
 RP_NAME = "Review Catalyst Nexus"
 
 class AuthService:

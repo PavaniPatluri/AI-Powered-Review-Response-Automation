@@ -166,6 +166,15 @@ async def draft_response(review_id: str, input_data: schemas.ReviewInput):
     except Exception as e:
         return {"id": review_id, "response": f"AI Engine is initializing. Root cause: {e}"}
 
+@app.post("/analyze-review")
+@app.post("/api/analyze-review")
+async def analyze_review_endpoint(request: schemas.ReviewAnalysisRequest):
+    try:
+        data = await ai_service.analyze_single_review(request.content, request.tone, request.business_type)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ─── Trends ──────────────────────────────────────────────────────────────────
 
 @app.get("/trends")
