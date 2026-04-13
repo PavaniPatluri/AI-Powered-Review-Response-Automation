@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+google-genai
+python-dotenv
+websockets
+httpx
+pydantic-settings
+webauthn
+pyjwt
