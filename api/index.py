@@ -1,24 +1,33 @@
 import sys
 import os
+import traceback
+from fastapi import FastAPI
 
 # Add the project root to the path
 current_dir = os.path.dirname(__file__)
 project_root = os.path.abspath(os.path.join(current_dir, ".."))
 sys.path.insert(0, project_root)
-
-# Force the backend directory into the path as well
 sys.path.insert(0, os.path.join(project_root, "backend"))
 
 try:
-    # On Vercel, we attempt to import the app from the backend.main module
     from backend.main import app
-except ImportError:
-    # Fallback for alternative directory structures
-    try:
-        from main import app
-    except ImportError as e:
-        print(f"CRITICAL: Failed to import FastAPI app. Path: {sys.path}")
-        raise e
-
-# Required for Vercel Python runtime
-handler = app
+    handler = app
+except Exception as e:
+    # EMERGENCY TRACEBACK ECHO
+    # If the app fails to start, we create a temporary FastAPI app 
+    # that will show us the EXACT error in the browser.
+    error_app = FastAPI()
+    error_trace = traceback.format_exc()
+    
+    @error_app.get("/{full_path:path}")
+    async def echo_error(full_path: str):
+        return {
+            "status": "CRITICAL_FAILURE",
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "traceback": error_trace.split("\n"),
+            "sys_path": sys.path,
+            "cwd": os.getcwd()
+        }
+    
+    handler = error_app
